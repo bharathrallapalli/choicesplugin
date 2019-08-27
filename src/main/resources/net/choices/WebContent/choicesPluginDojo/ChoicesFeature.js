@@ -3,7 +3,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         "dijit/form/TextBox", "ecm/model/Request", "dojo/_base/lang",
         "dojox/layout/TableContainer", "dijit/form/FilteringSelect",
         "dijit/form/Button", "dijit/layout/ContentPane", "dojo/store/Memory",
-        "dojo/on", "ecm/widget/TitlePane","dojo/dom-construct",
+        "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
         "dojo/text!./templates/ChoicesFeature.html"], function (declare,
         _LaunchBarPane, EnhancedGrid, ItemFileWriteStore, TextBox, Request,
         lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
@@ -33,8 +33,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.borderContainerHeight = document.body.clientHeight - ((document.body.clientHeight * 5) / 100);
             this.screenWidth = window.screen.width - ((window.screen.width * 5) / 100);
             var topMargin = ((document.body.clientHeight * 5) / 100);
-            var criteriaPaneHeight = (this.borderContainerHeight*10)/100;
-            var gridPaneHeight = (this.borderContainerHeight*70)/100;
+            var criteriaPaneHeight = (this.borderContainerHeight * 10) / 100;
+            var gridPaneHeight = (this.borderContainerHeight * 70) / 100;
             this.mainContentPane = new ContentPane({
                     region: "center",
                     splitter: false,
@@ -44,22 +44,24 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.criteriaTitlePane = new TitlePane({
                     title: 'Criteria',
                     open: true,
-                    style: "height:"+criteriaPaneHeight+"px"
+                    style: "height:" + criteriaPaneHeight + "px"
                 });
             this.resultsTitlePane = new TitlePane({
                     title: 'Results',
                     open: false
                 });
             this.gridContentPane = new ContentPane({
-                                    style: "height:"+criteriaPaneHeight+"px"
-                                });
+                    style: "height:" + criteriaPaneHeight + "px"
+                });
             this.resultsTitlePane.addChild(this.gridContentPane);
             this.mainContentPane.addChild(this.criteriaTitlePane);
             this.mainContentPane.addChild(this.resultsTitlePane);
-            this.tableContainer = domConstruct.create("table",{style:"max-width:800px"});
+            this.tableContainer = domConstruct.create("table", {
+                    style: "max-width:800px"
+                });
             var tableCP = new ContentPane({
-            content:this.tableContainer
-            });
+                    content: this.tableContainer
+                });
             this.criteriaTitlePane.addChild(tableCP);
             this.mainContentPane.placeAt(this.containerPane);
         },
@@ -71,8 +73,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this._getProperties();
             this.getDataButton = new Button({
                     label: "Get Choices",
-                    class:"solid searchTabButton",
-                    spanLabel:true,
+                    class: "solid searchTabButton",
+                    spanLabel: true,
                     style: "margin-left:3%",
                     onClick: lang.hitch(this, function () {
                         var requestParams = {
@@ -104,7 +106,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     store: this.gridStore,
                     structure: this.gridStructure,
                     rowSelector: "20px"
-                },document.createElement('div'));
+                }, document.createElement('div'));
             return grid;
         },
 
@@ -118,22 +120,25 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     on(this.objectTypeSelect, "change", lang.hitch(this, function (evt) {
                             self._getProperties(self.objectTypeSelect.displayedValue);
                         }));
-                    this.criteriaTr =  domConstruct.create("tr", {}, this.tableContainer);
+                    this.criteriaTr = domConstruct.create("tr", {}, this.tableContainer);
 
                     this._addTD(this._createLabel("Object Type:").domNode);
                     this._addTD(this.objectTypeSelect.domNode);
                 }));
         },
 
-        _addTD: function(domNode){
-           var td =  domConstruct.create("td", {style:"margin-left:1%",width:'5%'}, this.criteriaTr);
-           td.appendChild(domNode);
+        _addTD: function (domNode) {
+            var td = domConstruct.create("td", {
+                    style: "margin-left:1%",
+                    width: '5%'
+                }, this.criteriaTr);
+            td.appendChild(domNode);
         },
 
-        _createLabel: function(labelName){
+        _createLabel: function (labelName) {
             var label = new ContentPane({
-            content:labelName
-            });
+                    content: labelName
+                });
             return label;
         },
 
@@ -179,7 +184,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "field": "PROPERTY",
                             "editable": true,
                             "width": "10%",
-                             "hidden": true
+                            "hidden": true
                         }, {
                             "name": "Column1",
                             "field": "id",
@@ -209,7 +214,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "name": "DEPON",
                             "field": "DEPON",
                             "editable": true,
-                             "hidden": true
+                            "hidden": true
                         }, {
                             "name": "DEPVALUE",
                             "field": "DEPVALUE",
@@ -219,17 +224,18 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "name": "ISACTIVE",
                             "field": "ISACTIVE",
                             "editable": true,
-                            "width": "10%"
+                            "width": "10%",
+                            "type": dojox.grid.cells.Bool
                         }, {
                             "name": "OBJECTSTORE",
                             "field": "OBJECTSTORE",
                             "editable": true,
-                                                                       "hidden": true
+                            "hidden": true
                         }, {
                             "name": "OBJECTTYPE",
                             "field": "OBJECTTYPE",
                             "editable": true,
-                                                                       "hidden": true
+                            "hidden": true
                         },
                     ]];
             return structure;

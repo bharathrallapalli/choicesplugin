@@ -1,17 +1,14 @@
 <div>
-	<!--  Please add your configuration pane -->
-	<!--  For example
-    <table class="propertyTable" role="presentation">
+	<table class="propertyTable" role="presentation">
         <tr>
             <td class="propertyRowLabel">
                 <span class="required">*</span>
-                <label for="${id}_ecServerURI">Server:</label>&nbsp;
-                <div data-dojo-type="ecm.widget.HoverHelp" data-dojo-attach-point="ecServerURIHoverHelp" message="Specify a server address."></div>
+                <label for="${id}_accessGroups">Access Groups:</label>&nbsp;
+                <div data-dojo-type="ecm.widget.HoverHelp" data-dojo-attach-point="accessGroupHelp" message="Enter comma seperated LDAp groups those has access to this feature"></div>
             </td>
             <td class="propertyRowValue">
-                <div id="${id}_ecServerURI" data-dojo-attach-point="ecServerURI" data-dojo-attach-event="onKeyUp: _onFieldChange" data-dojo-type="ecm.widget.ValidationTextBox" required="true" trim="true" propercase="false"></div>
+                <div id="${id}_accessGroups" data-dojo-attach-point="accessGroups" data-dojo-attach-event="onKeyUp: _onFieldChange" data-dojo-type="ecm.widget.ValidationTextBox" required="true" trim="true" propercase="false"></div>
             </td>
         </tr>
     </table>
-    -->
 </div>

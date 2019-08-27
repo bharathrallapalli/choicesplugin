@@ -70,7 +70,13 @@ public class GetDataService  extends PluginService {
                     jsonObject.put("VALUE", choice.getVALUE());
                     jsonObject.put("DEPON", choice.getDEPON());
                     jsonObject.put("DEPVALUE", choice.getDEPVALUE());
-                    jsonObject.put("ISACTIVE", choice.getISACTIVE());
+                    if("y".equals(choice.getISACTIVE()))
+                    {
+                        jsonObject.put("ISACTIVE",true);
+                    }
+                    else{
+                        jsonObject.put("ISACTIVE", false);
+                    }
                     jsonObject.put("OBJECTSTORE", choice.getOBJECTSTORE());
                     jsonObject.put("OBJECTTYPE", choice.getOBJECTTYPE());
                     choiceArray.add(jsonObject);
