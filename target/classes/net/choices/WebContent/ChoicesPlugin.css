@@ -1,0 +1,7 @@
+.sampleFeatureLaunchIcon {
+	width: 32px;
+	height: 32px;
+	background-image: url('images/samplePlugin.svg');
+	background-repeat: no-repeat;
+	background-position: -16px -16px; 
+}

@@ -1,0 +1,6 @@
+net\choices\util\JDBCConnection.class
+net\choices\util\QueryOperations.class
+net\choices\ChoicesPlugin.class
+net\choices\feature\ChoicesFeature.class
+net\choices\model\Choices.class
+net\choices\services\GetDataService.class
