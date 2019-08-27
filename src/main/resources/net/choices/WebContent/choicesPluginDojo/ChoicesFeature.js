@@ -178,7 +178,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "name": "PROPERTY",
                             "field": "PROPERTY",
                             "editable": true,
-                            "width": "10%"
+                            "width": "10%",
+                             "hidden": true
                         }, {
                             "name": "Column1",
                             "field": "id",
@@ -188,12 +189,12 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "name": "LISTDISPNAME",
                             "field": "LISTDISPNAME",
                             "editable": true,
-                            "width": "10%"
+                            "hidden": true
                         }, {
                             "name": "LANG",
                             "field": "LANG",
                             "editable": true,
-                            "width": "10%"
+                            "hidden": true
                         }, {
                             "name": "DISPNAME",
                             "field": "DISPNAME",
@@ -208,12 +209,12 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "name": "DEPON",
                             "field": "DEPON",
                             "editable": true,
-                            "width": "10%"
+                             "hidden": true
                         }, {
                             "name": "DEPVALUE",
                             "field": "DEPVALUE",
                             "editable": true,
-                            "width": "10%"
+                            "hidden": true
                         }, {
                             "name": "ISACTIVE",
                             "field": "ISACTIVE",
@@ -223,12 +224,12 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             "name": "OBJECTSTORE",
                             "field": "OBJECTSTORE",
                             "editable": true,
-                            "width": "10%"
+                                                                       "hidden": true
                         }, {
                             "name": "OBJECTTYPE",
                             "field": "OBJECTTYPE",
                             "editable": true,
-                            "width": "10%"
+                                                                       "hidden": true
                         },
                     ]];
             return structure;
