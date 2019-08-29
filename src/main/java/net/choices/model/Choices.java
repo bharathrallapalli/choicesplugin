@@ -12,7 +12,9 @@ public class Choices {
 	private String ISACTIVE;
 	private String OBJECTSTORE;
 	private String OBJECTTYPE;
-	
+	private boolean ISUPDATED;
+	private boolean NEWINSERT;
+
 	public String getOBJECTTYPE() {
 		return OBJECTTYPE;
 	}
@@ -73,7 +75,21 @@ public class Choices {
 	public void setOBJECTSTORE(String oBJECTSTORE) {
 		OBJECTSTORE = oBJECTSTORE;
 	}
-	
-	
 
+
+	public boolean getISUPDATED() {
+		return ISUPDATED;
+	}
+
+	public void setISUPDATED(boolean ISUPDATED) {
+		this.ISUPDATED = ISUPDATED;
+	}
+
+	public boolean isNEWINSERT() {
+		return NEWINSERT;
+	}
+
+	public void setNEWINSERT(boolean NEWINSERT) {
+		this.NEWINSERT = NEWINSERT;
+	}
 }

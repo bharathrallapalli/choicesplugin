@@ -1,13 +1,18 @@
 define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
-        "dojox/grid/EnhancedGrid", "dojo/data/ItemFileWriteStore",
-        "dijit/form/TextBox", "ecm/model/Request", "dojo/_base/lang",
-        "dojox/layout/TableContainer", "dijit/form/FilteringSelect",
-        "dijit/form/Button", "dijit/layout/ContentPane", "dojo/store/Memory",
-        "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
-        "dojo/text!./templates/ChoicesFeature.html"], function (declare,
-        _LaunchBarPane, EnhancedGrid, ItemFileWriteStore, TextBox, Request,
-        lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
-        on, TitlePane, domConstruct, template) {
+    "dojox/grid/EnhancedGrid", "dojo/data/ItemFileWriteStore",
+    "dijit/form/TextBox", "ecm/model/Request", "dojo/_base/lang",
+    "dojox/layout/TableContainer", "dijit/form/FilteringSelect",
+    "dijit/form/Button", "dijit/layout/ContentPane", "dojo/store/Memory",
+    "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
+    "dojo/dom-style", "dojo/_base/array", "dojo/_base/connect",
+    "ecm/widget/dialog/ConfirmationDialog", "dojo/_base/event",
+    "ecm/widget/dialog/MessageDialog",
+    "dojo/text!./templates/ChoicesFeature.html"
+], function(declare,
+    _LaunchBarPane, EnhancedGrid, ItemFileWriteStore, TextBox, Request,
+    lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
+    on, TitlePane, domConstruct, domStyle, array, connect, ConfirmationDialog,
+    event, MessageDialog, template) {
     /**
      * @name choicesPluginDojo.ChoicesFeature
      * @class
@@ -28,254 +33,446 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         gridStore: null,
         criteriaTitlePane: null,
         resultsTitlePane: null,
+        actionsPane: null,
+        propertySelectValue: "",
 
-        createLayout: function () {
+        _addActions: function() {
+            var self = this;
+            this.actionTableContainer = domConstruct.create("table", {});
+            this.actionButtonCP = new ContentPane({
+                content: this.actionTableContainer,
+                style: "display:none"
+            });
+            this.resultsTitlePane.addChild(this.actionButtonCP);
+            this.actionButtonTR = domConstruct.create("tr", {}, this.actionTableContainer);
+            this.addButton = new Button({
+                label: "Add",
+                class: "solid searchTabButton",
+                spanLabel: true,
+                style: "margin-left:3%",
+                onClick: lang.hitch(this, function() {
+                    var inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                        return !item.VALUE[0] || !item.DISPNAME[0];
+                    });
+
+                    if (inProgressEdits.length > 0) {
+                        this._showMessageDialog("Add Error", "Please add data to existing items before adding new ones");
+                    } else {
+                        this.grid.setSortIndex(1, false);
+                        this.grid.sort();
+                        this.gridStore.newItem({
+                            DEPON: "VRGT_RMClient",
+                            DEPVALUE: "Annuities",
+                            DISPNAME: "",
+                            ISACTIVE: false,
+                            ISUPDATED: true,
+                            LANG: "en_US",
+                            LISTDISPNAME: "Annuities",
+                            OBJECTSTORE: null,
+                            OBJECTTYPE: this.objectTypeSelect.displayedValue,
+                            PROPERTY: this.propertySelectValue,
+                            VALUE: "",
+                            id: this.gridStore._arrayOfAllItems.length + 1,
+                            NEWINSERT: true
+                        });
+                        this.grid.sort();
+                    }
+
+                })
+            });
+            this._addTD(this.addButton.domNode, this.actionButtonTR, "margin-left:1%", "0%");
+            this.saveButton = new Button({
+                label: "Save",
+                class: "solid searchTabButton",
+                spanLabel: true,
+                style: "margin-left:3%",
+                onClick: lang.hitch(this, function() {
+
+                    var inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                        return !item.VALUE[0] || !item.DISPNAME[0];
+                    });
+                    if (inProgressEdits.length > 0) {
+                        this._showMessageDialog("Add Error", "Invalid Data! Please correct invalid records before saving");
+                    } else {
+                        var insertedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                            return item.NEWINSERT && item.NEWINSERT[0] == true;
+                        });
+                        var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                            return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
+                        });
+                        var requestParams = {
+                            actionName: "setChoices",
+                            objectType: this.objectTypeSelect.displayedValue,
+                            property: this.propertySelect.displayedValue,
+                            insertedRows: insertedRows,
+                            updatedRows: updatedRows
+                        };
+                        console.log(requestParams);
+                    }
+
+                })
+            });
+            this._addTD(this.saveButton.domNode, this.actionButtonTR, "margin-left:1%", "0%");
+            this.resetButton = new Button({
+                label: "Reset",
+                class: "solid searchTabButton",
+                spanLabel: true,
+                style: "margin-left:3%",
+                onClick: lang.hitch(this, function() {
+                    this._showConfirmationDialog("Are you sure you want to reset?", lang.hitch(this, function() {
+                            this._resetGrid();
+                            this._showMessageDialog("Reset", "Reset Successful");
+                        }),
+                        lang.hitch(this, function() {
+
+                        }))
+                })
+            });
+            this._addTD(this.resetButton.domNode, this.actionButtonTR, "margin-left:1%", "0%");
+        },
+
+        _resetGrid: function() {
+            var requestParams = {
+                actionName: "getChoices",
+                objectType: this.objectTypeSelect.displayedValue,
+                property: this.propertySelect.displayedValue
+            };
+            this._callService(requestParams, lang.hitch(this, function(response) {
+                this._setGridStore(response.data);
+            }));
+        },
+
+        createLayout: function() {
+            this.logEntry("createLayout");
             this.borderContainerHeight = document.body.clientHeight - ((document.body.clientHeight * 5) / 100);
             this.screenWidth = window.screen.width - ((window.screen.width * 5) / 100);
             var topMargin = ((document.body.clientHeight * 5) / 100);
             var criteriaPaneHeight = (this.borderContainerHeight * 10) / 100;
-            var gridPaneHeight = (this.borderContainerHeight * 70) / 100;
+            var gridPaneHeight = (this.borderContainerHeight * 71) / 100;
             this.mainContentPane = new ContentPane({
-                    region: "center",
-                    splitter: false,
-                    style: "height:" + this.borderContainerHeight + "px"
-                });
+                region: "center",
+                splitter: false,
+                style: "height:" + this.borderContainerHeight + "px"
+            });
 
             this.criteriaTitlePane = new TitlePane({
-                    title: 'Criteria',
-                    open: true,
-                    style: "height:" + criteriaPaneHeight + "px"
-                });
+                title: 'Criteria',
+                open: true
+            });
             this.resultsTitlePane = new TitlePane({
-                    title: 'Results',
-                    open: false
-                });
+                title: 'Results',
+                open: false
+            });
             this.gridContentPane = new ContentPane({
-                    style: "height:" + criteriaPaneHeight + "px"
-                });
+                style: "height:" + gridPaneHeight + "px; margin-top:1%"
+            });
+            this._addActions();
             this.resultsTitlePane.addChild(this.gridContentPane);
             this.mainContentPane.addChild(this.criteriaTitlePane);
             this.mainContentPane.addChild(this.resultsTitlePane);
             this.tableContainer = domConstruct.create("table", {
-                    style: "max-width:800px"
-                });
+                style: "max-width:800px;height:" + criteriaPaneHeight + "px;margin-top: -1%;margin-left: 3%"
+            });
             var tableCP = new ContentPane({
-                    content: this.tableContainer
-                });
+                content: this.tableContainer
+            });
             this.criteriaTitlePane.addChild(tableCP);
             this.mainContentPane.placeAt(this.containerPane);
+            this.logExit("createLayout");
         },
-        postCreate: function () {
+
+        postCreate: function() {
             this.logEntry("postCreate");
             this.inherited(arguments);
             this.createLayout();
             this._getObjectTypes();
             this._getProperties();
             this.getDataButton = new Button({
-                    label: "Get Choices",
-                    class: "solid searchTabButton",
-                    spanLabel: true,
-                    style: "margin-left:3%",
-                    onClick: lang.hitch(this, function () {
-                        var requestParams = {
-                            actionName: "getChoices",
-                            objectType: this.objectTypeSelect.displayedValue,
-                            property: this.propertySelect.displayedValue
-                        };
-                        this._callService(requestParams, lang.hitch(this, function (response) {
-                                this.gridData = {
-                                    identifier: "id",
-                                    items: response.data
-                                };
-                                this.gridStore = new ItemFileWriteStore({
-                                        data: this.gridData
-                                    });
-                                this.gridStructure = this._getStructure();
-                                this.grid = this._createGrid();
-                                this.resultsTitlePane.set("open", true);
-                                this.gridContentPane.set("content", this.grid);
-                                this.grid.startup();
-                            }));
-                    })
-                });
+                label: "Get Choices",
+                class: "solid searchTabButton",
+                spanLabel: true,
+                style: "margin-left:3%",
+                onClick: lang.hitch(this, function() {
+                    var requestParams = {
+                        actionName: "getChoices",
+                        objectType: this.objectTypeSelect.displayedValue,
+                        property: this.propertySelect.displayedValue
+                    };
+                    this._callService(requestParams, lang.hitch(this, function(response) {
+                        this._setGridStore(response.data);
+                        this.gridStructure = this._getStructure();
+                        this.grid = this._createGrid();
+                        this.resultsTitlePane.set("open", true);
+                        this.gridContentPane.set("content", this.grid);
+                        this.grid.startup();
+                        domStyle.set(this.actionButtonCP.domNode, "display", "");
+                    }));
+                })
+            });
             this.logExit("postCreate");
         },
 
-        _createGrid: function () {
-            var grid = new EnhancedGrid({
-                    store: this.gridStore,
-                    structure: this.gridStructure,
-                    rowSelector: "20px"
-                }, document.createElement('div'));
-            return grid;
+        _setGridStore: function(data) {
+            this.gridData = {
+                identifier: "id",
+                items: data
+            };
+            this.gridStore = new ItemFileWriteStore({
+                data: this.gridData
+            });
+            if (this.grid) {
+                this.grid.setStore(this.gridStore);
+            }
         },
 
-        _getObjectTypes: function () {
+        _createGrid: function() {
+            this.logEntry("_createGrid");
+            var self = this;
+            dojo.require("dojox.grid.enhanced.plugins.IndirectSelection");
+            var grid = new EnhancedGrid({
+                store: this.gridStore,
+                structure: this.gridStructure,
+                onApplyCellEdit: function(inValue, inRowIndex, inField) {
+                    self.grid.store._arrayOfAllItems[inRowIndex].ISUPDATED = true;
+                },
+                rowSelector: "20px",
+            }, document.createElement('div'));
+            return grid;
+            this.logExit("_createGrid");
+        },
+
+        _getObjectTypes: function() {
+            this.logEntry("_getObjectTypes");
             var self = this;
             var requestParams = {
                 actionName: "getObjectTypes"
             };
-            this._callService(requestParams, lang.hitch(this, function (response) {
-                    this.objectTypeSelect = this.getFilteringList(response.data, "Object Type", "objectType");
-                    on(this.objectTypeSelect, "change", lang.hitch(this, function (evt) {
-                            self._getProperties(self.objectTypeSelect.displayedValue);
-                        }));
-                    this.criteriaTr = domConstruct.create("tr", {}, this.tableContainer);
-
-                    this._addTD(this._createLabel("Object Type:").domNode);
-                    this._addTD(this.objectTypeSelect.domNode);
+            this._callService(requestParams, lang.hitch(this, function(response) {
+                this.objectTypeSelect = this.getFilteringList(response.data, "Object Type", "objectType");
+                on(this.objectTypeSelect, "change", lang.hitch(this, function(evt) {
+                    self.propertySelect.set("value", "");
+                    self._getProperties(self.objectTypeSelect.displayedValue);
                 }));
+                this.criteriaTr = domConstruct.create("tr", {}, this.tableContainer);
+                this._addTD(this._createLabel("Object Type:").domNode, this.criteriaTr, "margin-left:1%", "3%");
+                this._addTD(this.objectTypeSelect.domNode, this.criteriaTr, "margin-left:1%", "3%");
+            }));
+            this.logExit("_getObjectTypes");
         },
 
-        _addTD: function (domNode) {
+        _addTD: function(domNode, refNode, style, width) {
+            this.logEntry("_addTD");
             var td = domConstruct.create("td", {
-                    style: "margin-left:1%",
-                    width: '5%'
-                }, this.criteriaTr);
+                style: style,
+                width: width
+            }, refNode);
             td.appendChild(domNode);
+            this.logExit("_addTD");
+
         },
 
-        _createLabel: function (labelName) {
+        _createLabel: function(labelName) {
+            this.logEntry("_createLabel");
             var label = new ContentPane({
-                    content: labelName
-                });
+                content: labelName
+            });
             return label;
+            this.logExit("_createLabel");
         },
 
-        _getProperties: function (objectType) {
+        _getProperties: function(objectType) {
+            this.logEntry("_getProperties");
             var self = this;
             var requestParams = {
                 actionName: "getProperties",
                 objectType: objectType
             };
-            this._callService(requestParams, lang.hitch(this, function (response) {
-                    if (!this.propertySelect) {
-                        this.propertySelect = this.getFilteringList(response.data, "Property", "property");
-                        this._addTD(this._createLabel("Property:").domNode);
-                        this._addTD(this.propertySelect.domNode);
-                        this._addTD(this.getDataButton.domNode);
-                    } else {
-                        var store = new Memory({
-                                data: response.data
+            this._callService(requestParams, lang.hitch(this, function(response) {
+                var self = this;
+                if (!this.propertySelect) {
+                    this.propertySelect = this.getFilteringList(response.data, "Property", "property");
+                    on(this.propertySelect, "change", lang.hitch(this, function(evt) {
+                        if (this.gridStore && evt !== this.propertySelectValue) {
+                            var insertedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                                return item.NEWINSERT && item.NEWINSERT[0] == true;
                             });
-                        this.propertySelect.set("store", store);
-                    }
+                            var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                                return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
+                            });
+                            if (insertedRows.length > 0 || updatedRows.length > 0) {
+                                this._showConfirmationDialog("Some changes have been made to current choices, Do you really want to change the property?",
+                                    lang.hitch(this, function() {
+                                        this._resetGrid();
+                                        this.propertySelectValue = evt;
+                                    }),
+                                    lang.hitch(this, function() {
+                                        this.propertySelect.set("value", this.propertySelectValue)
+                                    }));
+                            } else {
+                                this.propertySelectValue = evt;
+                            }
+                        } else {
+                            this.propertySelectValue = evt;
+                        }
+                    }));
+                    this._addTD(this._createLabel("Property:").domNode, this.criteriaTr, "margin-left:1%", "3%");
+                    this._addTD(this.propertySelect.domNode, this.criteriaTr, "margin-left:1%", "3%");
+                    this._addTD(this.getDataButton.domNode, this.criteriaTr, "margin-left:1%", "3%");
+                } else {
+                    var store = new Memory({
+                        data: response.data
+                    });
+                    this.propertySelect.set("store", store);
+                }
 
-                }));
+            }));
+            this.logExit("_getProperties");
         },
 
-        getFilteringList: function (data, labelval, name) {
+        _showMessageDialog: function(title, text) {
+            var messageDialog = new MessageDialog({
+                title: title,
+                text: text,
+                style: "width:300px"
+            });
+            messageDialog.show();
+        },
+
+        _showConfirmationDialog: function(msg, onExecute, onCancel) {
+            var dialog = new ConfirmationDialog({
+                title: "Please Confirm,
+                text: msg,
+                onExecute: onExecute,
+                onCancel: onCancel
+            });
+            dialog.show();
+        },
+
+        getFilteringList: function(data, labelval, name) {
+            this.logEntry("getFilteringList");
             var store = new Memory({
-                    data: data
-                });
+                data: data
+            });
             var list = new FilteringSelect({
-                    name: name,
-                    label: labelval,
-                    store: store,
-                    searchAttr: "name",
-                    style: "margin-left:3%"
-                });
+                name: name,
+                label: labelval,
+                store: store,
+                searchAttr: "name",
+                style: "margin-left:3%"
+            });
             return list;
+            this.logExit("getFilteringList");
         },
 
-        _getStructure: function () {
-            var structure = this.gridStructure = [[{
-                            "name": "PROPERTY",
-                            "field": "PROPERTY",
-                            "editable": true,
-                            "width": "10%",
-                            "hidden": true
-                        }, {
-                            "name": "Column1",
-                            "field": "id",
-                            "hidden": true,
-                            "width": "10%"
-                        }, {
-                            "name": "LISTDISPNAME",
-                            "field": "LISTDISPNAME",
-                            "editable": true,
-                            "hidden": true
-                        }, {
-                            "name": "LANG",
-                            "field": "LANG",
-                            "editable": true,
-                            "hidden": true
-                        }, {
-                            "name": "DISPNAME",
-                            "field": "DISPNAME",
-                            "editable": true,
-                            "width": "10%"
-                        }, {
-                            "name": "VALUE",
-                            "field": "VALUE",
-                            "editable": true,
-                            "width": "10%"
-                        }, {
-                            "name": "DEPON",
-                            "field": "DEPON",
-                            "editable": true,
-                            "hidden": true
-                        }, {
-                            "name": "DEPVALUE",
-                            "field": "DEPVALUE",
-                            "editable": true,
-                            "hidden": true
-                        }, {
-                            "name": "ISACTIVE",
-                            "field": "ISACTIVE",
-                            "editable": true,
-                            "width": "10%",
-                            "type": dojox.grid.cells.Bool
-                        }, {
-                            "name": "OBJECTSTORE",
-                            "field": "OBJECTSTORE",
-                            "editable": true,
-                            "hidden": true
-                        }, {
-                            "name": "OBJECTTYPE",
-                            "field": "OBJECTTYPE",
-                            "editable": true,
-                            "hidden": true
-                        },
-                    ]];
+        _getStructure: function() {
+            this.logEntry("_getStructure");
+            var structure = this.gridStructure = [
+                [{
+                    "name": "PROPERTY",
+                    "field": "PROPERTY",
+                    "editable": true,
+                    "width": "10%",
+                    "hidden": true
+                }, {
+                    "name": "Column1",
+                    "field": "id",
+                    "hidden": true,
+                    "width": "10%"
+                }, {
+                    "name": "LISTDISPNAME",
+                    "field": "LISTDISPNAME",
+                    "editable": true,
+                    "hidden": true
+                }, {
+                    "name": "LANG",
+                    "field": "LANG",
+                    "editable": true,
+                    "hidden": true
+                }, {
+                    "name": "DISPNAME",
+                    "field": "DISPNAME",
+                    "editable": true,
+                    "width": "10%"
+                }, {
+                    "name": "VALUE",
+                    "field": "VALUE",
+                    "editable": true,
+                    "width": "10%"
+                }, {
+                    "name": "DEPON",
+                    "field": "DEPON",
+                    "editable": true,
+                    "hidden": true
+                }, {
+                    "name": "DEPVALUE",
+                    "field": "DEPVALUE",
+                    "editable": true,
+                    "hidden": true
+                }, {
+                    "name": "ISACTIVE",
+                    "field": "ISACTIVE",
+                    "editable": true,
+                    "width": "10%",
+                    "type": dojox.grid.cells.Bool
+                }, {
+                    "name": "OBJECTSTORE",
+                    "field": "OBJECTSTORE",
+                    "editable": true,
+                    "hidden": true
+                }, {
+                    "name": "OBJECTTYPE",
+                    "field": "OBJECTTYPE",
+                    "editable": true,
+                    "hidden": true
+                }, {
+                    "name": "ISUPDATED",
+                    "field": "ISUPDATED",
+                    "value": false,
+                    "hidden": true
+                }, {
+                    "name": "NEWINSERT",
+                    "field": "NEWINSERT",
+                    "hidden": true
+                }]
+            ];
             return structure;
+            this.logExit("_getStructure");
         },
 
-        _callService: function (requestParams, callbacks) {
+        _callService: function(requestParams, callbacks) {
+            this.logEntry("_callService");
+            requestParams.repositoryId = ecm.model.desktop.repositories[0].id;
             Request.invokePluginService("ChoicesPlugin", "GetDataService", {
                 requestParams: requestParams,
-                requestCompleteCallback: lang.hitch(this, function (response) {
+                requestCompleteCallback: lang.hitch(this, function(response) {
                     if (callbacks)
                         callbacks(response);
                 })
             });
+            this.logExit("_callService");
         },
 
-        setParams: function (params) {
+        setParams: function(params) {
+            this.logEntry("setParams");
             this.logEntry("setParams", params);
-
             if (params) {
-
                 if (!this.isLoaded && this.selected) {
                     this.loadContent();
                 }
             }
-
             this.logExit("setParams");
         },
 
-        loadContent: function () {
+        loadContent: function() {
             this.logEntry("loadContent");
-
             if (!this.isLoaded) {
                 this.isLoaded = true;
                 this.needReset = false;
             }
-
             this.logExit("loadContent");
         },
 
-        reset: function () {
+        reset: function() {
             this.logEntry("reset");
             this.needReset = false;
             this.logExit("reset");

@@ -23,7 +23,7 @@ public class QueryOperations {
     public List<Choices> getObjectTypes() throws Exception{
 		Statement stmt = null;
 		List<Choices> choices = new ArrayList<Choices>();
-		String query = "SELECT OBJECTTYPE FROM \"TOSCHEMA\".\"vgi_edschoices\"";
+		String query = "SELECT DISTINCT(OBJECTTYPE) FROM \"TOSCHEMA\".\"vgi_edschoices\"";
 		try {
 			stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(query);
@@ -46,7 +46,7 @@ public class QueryOperations {
 	public List<Choices> getProperties(String objectType) throws Exception{
 		Statement stmt = null;
 		List<Choices> choices = new ArrayList<Choices>();
-		String query = "SELECT PROPERTY FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE='"+objectType+"'";
+		String query = "SELECT DISTINCT(PROPERTY) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE='"+objectType+"'";
 		try {
 			stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(query);

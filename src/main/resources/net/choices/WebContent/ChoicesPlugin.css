@@ -5,3 +5,7 @@
 	background-repeat: no-repeat;
 	background-position: -16px -16px; 
 }
+
+.dijitTitlePane {
+    border-color: #008abf !important;
+}
