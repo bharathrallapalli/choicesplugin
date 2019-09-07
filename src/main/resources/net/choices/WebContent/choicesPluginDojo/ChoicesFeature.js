@@ -36,6 +36,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         actionsPane: null,
         propertySelectValue: "",
         inProgressCheckPassed: false,
+        propertyTR:null,
 
         _addActions: function() {
             var self = this;
@@ -188,7 +189,6 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.inherited(arguments);
             this.createLayout();
             this._getObjectTypes();
-            this._getProperties();
             this.getDataButton = new Button({
                 label: "Get Choices",
                 class: "solid searchTabButton",
@@ -286,6 +286,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 this.propertyTR = domConstruct.create("tr", {}, this.tableContainer);
                 this._addTD(this._createLabel("Object Type:").domNode, this.criteriaTr, "margin-left:1%", "3%");
                 this._addTD(this.objectTypeSelect.domNode, this.criteriaTr, "margin-left:1%", "3%");
+                this._getProperties();
             }));
             this.logExit("_getObjectTypes");
         },
