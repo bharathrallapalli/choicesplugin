@@ -23,6 +23,27 @@
             <artifactId>navigatorAPI</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.ibm</groupId>
+            <artifactId>Jace</artifactId>
+            <version>1.0</version>
+        </dependency><dependency>
+            <groupId>com.ibm</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.14</version>
+        </dependency><dependency>
+            <groupId>com.ibm</groupId>
+            <artifactId>xlxpScannerUtils</artifactId>
+            <version>1.0</version>
+        </dependency><dependency>
+            <groupId>com.ibm</groupId>
+            <artifactId>stax-api</artifactId>
+            <version>1.0</version>
+        </dependency><dependency>
+            <groupId>com.ibm</groupId>
+            <artifactId>xlxpScanner</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

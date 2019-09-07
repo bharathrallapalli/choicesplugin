@@ -35,6 +35,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         resultsTitlePane: null,
         actionsPane: null,
         propertySelectValue: "",
+        inProgressCheckPassed: false,
 
         _addActions: function() {
             var self = this;
@@ -60,17 +61,18 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     } else {
                         this.grid.setSortIndex(1, false);
                         this.grid.sort();
+                        var item = this.gridStore._arrayOfAllItems[0];
                         this.gridStore.newItem({
-                            DEPON: "VRGT_RMClient",
-                            DEPVALUE: "Annuities",
+                            DEPON: item.DEPON,
+                            DEPVALUE: item.DEPVALUE,
                             DISPNAME: "",
                             ISACTIVE: false,
                             ISUPDATED: true,
-                            LANG: "en_US",
-                            LISTDISPNAME: "Annuities",
-                            OBJECTSTORE: null,
-                            OBJECTTYPE: this.objectTypeSelect.displayedValue,
-                            PROPERTY: this.propertySelectValue,
+                            LANG: item.LANG,
+                            LISTDISPNAME:item.LISTDISPNAME,
+                            OBJECTSTORE: item.OBJECTSTORE,
+                            OBJECTTYPE: item.OBJECTTYPE,
+                            PROPERTY: item.PROPERTY,
                             VALUE: "",
                             id: this.gridStore._arrayOfAllItems.length + 1,
                             NEWINSERT: true
@@ -102,8 +104,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         });
                         var requestParams = {
                             actionName: "setChoices",
-                            objectType: this.objectTypeSelect.displayedValue,
-                            property: this.propertySelect.displayedValue,
+                            objectType: this.objectTypeSelectValue,
+                            property: this.propertySelectValue,
                             insertedRows: insertedRows,
                             updatedRows: updatedRows
                         };
@@ -134,8 +136,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         _resetGrid: function() {
             var requestParams = {
                 actionName: "getChoices",
-                objectType: this.objectTypeSelect.displayedValue,
-                property: this.propertySelect.displayedValue
+                objectType: this.objectTypeSelectValue,
+                property: this.propertySelectValue
             };
             this._callService(requestParams, lang.hitch(this, function(response) {
                 this._setGridStore(response.data);
@@ -195,8 +197,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 onClick: lang.hitch(this, function() {
                     var requestParams = {
                         actionName: "getChoices",
-                        objectType: this.objectTypeSelect.displayedValue,
-                        property: this.propertySelect.displayedValue
+                        objectType: this.objectTypeSelectValue,
+                        property: this.propertySelectValue
                     };
                     this._callService(requestParams, lang.hitch(this, function(response) {
                         this._setGridStore(response.data);
@@ -250,8 +252,35 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this._callService(requestParams, lang.hitch(this, function(response) {
                 this.objectTypeSelect = this.getFilteringList(response.data, "Object Type", "objectType");
                 on(this.objectTypeSelect, "change", lang.hitch(this, function(evt) {
-                    self.propertySelect.set("value", "");
-                    self._getProperties(self.objectTypeSelect.displayedValue);
+                    if (!this.gridStore) {
+                        self.propertySelect.set("value", "");
+                        self._getProperties(evt);
+                    }
+                    if (this.gridStore && evt !== this.objectTypeSelectValue) {
+                        if (this._checkForInProgressEdits()) {
+                            this.inProgressCheckPassed = true;
+                            this._showConfirmationDialog("Some changes have been made to current choices, Do you really want to change the Object Type ?",
+                                lang.hitch(this, function() {
+                                    this.objectTypeSelectValue = evt;
+                                    self.propertySelect.set("value", "");
+                                    this.propertySelectValue= "";
+                                    var newStore = new dojo.data.ItemFileReadStore({data: {  identifier: "",  items: []}});
+                                    this.grid.setStore(newStore);
+                                    this.gridStore = null;
+                                    self._getProperties(evt);
+                                    domStyle.set(this.actionButtonCP.domNode, "display", "none");
+                                }),
+                                lang.hitch(this, function() {
+                                    this.objectTypeSelect.set("value", this.propertySelectValue)
+                                }));
+                        } else {
+                            self.propertySelect.set("value", "");
+                            self._getProperties(evt);
+                            this.objectTypeSelectValue = evt;
+                        }
+                    } else {
+                        this.objectTypeSelectValue = evt;
+                    }
                 }));
                 this.criteriaTr = domConstruct.create("tr", {}, this.tableContainer);
                 this._addTD(this._createLabel("Object Type:").domNode, this.criteriaTr, "margin-left:1%", "3%");
@@ -280,6 +309,24 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.logExit("_createLabel");
         },
 
+        _checkForInProgressEdits: function(message, node, evt, refNode) {
+            var insertedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                return item.NEWINSERT && item.NEWINSERT[0] == true;
+            });
+            var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
+            });
+            if (insertedRows.length > 0 || updatedRows.length > 0) {
+                if (this.inProgressCheckPassed) {
+                    this.inProgressCheckPassed = false;
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
+            }
+        },
+
         _getProperties: function(objectType) {
             this.logEntry("_getProperties");
             var self = this;
@@ -293,17 +340,11 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     this.propertySelect = this.getFilteringList(response.data, "Property", "property");
                     on(this.propertySelect, "change", lang.hitch(this, function(evt) {
                         if (this.gridStore && evt !== this.propertySelectValue) {
-                            var insertedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                                return item.NEWINSERT && item.NEWINSERT[0] == true;
-                            });
-                            var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                                return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
-                            });
-                            if (insertedRows.length > 0 || updatedRows.length > 0) {
-                                this._showConfirmationDialog("Some changes have been made to current choices, Do you really want to change the property?",
+                            if (this._checkForInProgressEdits()) {
+                                this._showConfirmationDialog("Some changes have been made to current choices, Do you really want to change the Property?",
                                     lang.hitch(this, function() {
-                                        this._resetGrid();
                                         this.propertySelectValue = evt;
+                                        this._resetGrid();
                                     }),
                                     lang.hitch(this, function() {
                                         this.propertySelect.set("value", this.propertySelectValue)
@@ -340,7 +381,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
 
         _showConfirmationDialog: function(msg, onExecute, onCancel) {
             var dialog = new ConfirmationDialog({
-                title: "Please Confirm,
+                title: "Please Confirm",
                 text: msg,
                 onExecute: onExecute,
                 onCancel: onCancel
@@ -371,8 +412,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     "name": "PROPERTY",
                     "field": "PROPERTY",
                     "editable": true,
-                    "width": "10%",
-                    "hidden": true
+                    "width": "10%"
                 }, {
                     "name": "Column1",
                     "field": "id",
@@ -422,8 +462,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 }, {
                     "name": "OBJECTTYPE",
                     "field": "OBJECTTYPE",
-                    "editable": true,
-                    "hidden": true
+                    "editable": true
                 }, {
                     "name": "ISUPDATED",
                     "field": "ISUPDATED",
