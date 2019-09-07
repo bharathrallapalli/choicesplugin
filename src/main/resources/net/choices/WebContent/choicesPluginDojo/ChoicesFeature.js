@@ -149,8 +149,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.borderContainerHeight = document.body.clientHeight - ((document.body.clientHeight * 5) / 100);
             this.screenWidth = window.screen.width - ((window.screen.width * 5) / 100);
             var topMargin = ((document.body.clientHeight * 5) / 100);
-            var criteriaPaneHeight = (this.borderContainerHeight * 10) / 100;
-            var gridPaneHeight = (this.borderContainerHeight * 71) / 100;
+            var criteriaPaneHeight = (this.borderContainerHeight * 15) / 100;
+            var gridPaneHeight = (this.borderContainerHeight * 70) / 100;
             this.mainContentPane = new ContentPane({
                 region: "center",
                 splitter: false,
@@ -283,6 +283,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     }
                 }));
                 this.criteriaTr = domConstruct.create("tr", {}, this.tableContainer);
+                this.propertyTR = domConstruct.create("tr", {}, this.tableContainer);
                 this._addTD(this._createLabel("Object Type:").domNode, this.criteriaTr, "margin-left:1%", "3%");
                 this._addTD(this.objectTypeSelect.domNode, this.criteriaTr, "margin-left:1%", "3%");
             }));
@@ -356,9 +357,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             this.propertySelectValue = evt;
                         }
                     }));
-                    this._addTD(this._createLabel("Property:").domNode, this.criteriaTr, "margin-left:0%", "3%");
-                    this._addTD(this.propertySelect.domNode, this.criteriaTr, "margin-left:0%", "3%");
-                    this._addTD(this.getDataButton.domNode, this.criteriaTr, "margin-left:0%", "3%");
+                    this._addTD(this._createLabel("Property:").domNode, this.propertyTR, "margin-left:0%", "3%");
+                    this._addTD(this.propertySelect.domNode, this.propertyTR, "margin-left:0%", "3%");
+                    this._addTD(this.getDataButton.domNode, this.propertyTR, "margin-left:-3%", "3%");
                 } else {
                     var store = new Memory({
                         data: response.data
