@@ -173,7 +173,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.mainContentPane.addChild(this.criteriaTitlePane);
             this.mainContentPane.addChild(this.resultsTitlePane);
             this.tableContainer = domConstruct.create("table", {
-                style: "max-width:800px;height:" + criteriaPaneHeight + "px;margin-top: -1%;margin-left: 3%"
+                style: "max-width:80%;height:" + criteriaPaneHeight + "px;margin-top: -1%;margin-left: 3%"
             });
             var tableCP = new ContentPane({
                 content: this.tableContainer
@@ -356,9 +356,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             this.propertySelectValue = evt;
                         }
                     }));
-                    this._addTD(this._createLabel("Property:").domNode, this.criteriaTr, "margin-left:1%", "3%");
-                    this._addTD(this.propertySelect.domNode, this.criteriaTr, "margin-left:1%", "3%");
-                    this._addTD(this.getDataButton.domNode, this.criteriaTr, "margin-left:1%", "3%");
+                    this._addTD(this._createLabel("Property:").domNode, this.criteriaTr, "margin-left:0%", "3%");
+                    this._addTD(this.propertySelect.domNode, this.criteriaTr, "margin-left:0%", "3%");
+                    this._addTD(this.getDataButton.domNode, this.criteriaTr, "margin-left:0%", "3%");
                 } else {
                     var store = new Memory({
                         data: response.data
