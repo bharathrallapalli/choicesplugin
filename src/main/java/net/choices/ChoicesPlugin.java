@@ -1,20 +1,10 @@
 package net.choices;
 
-import java.util.Locale;
+import com.ibm.ecm.extension.*;
+import net.choices.services.UserProfileService;
 
 import javax.servlet.http.HttpServletRequest;
-
-import com.ibm.ecm.extension.*;
-import com.ibm.ecm.extension.PluginAction;
-import com.ibm.ecm.extension.PluginLayout;
-import com.ibm.ecm.extension.PluginMenu;
-import com.ibm.ecm.extension.PluginMenuType;
-import com.ibm.ecm.extension.PluginODAuthenticationService;
-import com.ibm.ecm.extension.PluginOpenAction;
-import com.ibm.ecm.extension.PluginRequestFilter;
-import com.ibm.ecm.extension.PluginResponseFilter;
-import com.ibm.ecm.extension.PluginServiceCallbacks;
-import com.ibm.ecm.extension.PluginViewerDef;
+import java.util.Locale;
 
 /**
  * Provides the main class of an IBM Content Navigator plug-in. The abstract
@@ -200,7 +190,7 @@ public class ChoicesPlugin extends Plugin {
 	 *         objects.
 	 */
 	public PluginResponseFilter[] getResponseFilters() {
-		return new PluginResponseFilter[0];
+		return new PluginResponseFilter[]{};
 	}
 
 	/**
@@ -311,7 +301,7 @@ public class ChoicesPlugin extends Plugin {
 	 *         plug-in, the call should return an empty array.
 	 */
 	public com.ibm.ecm.extension.PluginService[] getServices() {
-		return new com.ibm.ecm.extension.PluginService[]{new net.choices.services.GetDataService()};
+		return new com.ibm.ecm.extension.PluginService[]{new net.choices.services.GetDataService(), new UserProfileService()};
 	}
 	
 }

@@ -1,10 +1,14 @@
 package net.choices.util;
 
 import com.filenet.api.collection.RepositoryRowSet;
+import com.filenet.api.collection.UserSet;
+import com.filenet.api.core.Factory;
 import com.filenet.api.core.ObjectStore;
 import com.filenet.api.query.RepositoryRow;
 import com.filenet.api.query.SearchSQL;
 import com.filenet.api.query.SearchScope;
+import com.filenet.api.security.Group;
+import com.filenet.api.security.User;
 
 import java.io.InputStream;
 import java.util.*;
@@ -44,5 +48,25 @@ public class CEUtil {
         System.out.println("Query "+query);
         System.out.println("Results returned = "+count);
         return returnMap;
+    }
+
+    public boolean checkGroupMembership(String userId, ObjectStore objectStore, List<String> accessGroups) throws Exception{
+        objectStore = Factory.ObjectStore.fetchInstance(objectStore.get_Domain(), objectStore.get_Id(), null);
+        System.out.println("Connection "+objectStore.getConnection());
+        for(String accessGroup: accessGroups){
+            System.out.println("Group Name : "+accessGroup);
+            Group group = Factory.Group.fetchInstance(objectStore.getConnection(), accessGroup, null);
+            UserSet userSet = group.get_Users();
+            Iterator<User> userIterator = userSet.iterator();
+            System.out.println("Users :");
+            while (userIterator.hasNext()){
+                User user = userIterator.next();
+                System.out.println(user.get_Name()+" "+ user.get_ShortName());
+                if(userId.equals(user.get_ShortName())){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
