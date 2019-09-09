@@ -36,7 +36,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         actionsPane: null,
         propertySelectValue: "",
         inProgressCheckPassed: false,
-        propertyTR:null,
+        propertyTR: null,
 
         _addActions: function() {
             var self = this;
@@ -70,7 +70,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             ISACTIVE: false,
                             ISUPDATED: true,
                             LANG: item.LANG,
-                            LISTDISPNAME:item.LISTDISPNAME,
+                            LISTDISPNAME: item.LISTDISPNAME,
                             OBJECTSTORE: item.OBJECTSTORE,
                             OBJECTTYPE: item.OBJECTTYPE,
                             PROPERTY: item.PROPERTY,
@@ -134,6 +134,58 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this._addTD(this.resetButton.domNode, this.actionButtonTR, "margin-left:1%", "0%");
         },
 
+        _createFilterTR: function() {
+        var self =this;
+            if (this.filerButtonTR) {
+                this.filerButtonTR.innerHTML = "";
+            } else {
+                this.filterTableContainer = domConstruct.create("table", {style:"margin-left:50%", width:"50%"});
+                this.actionButtonCP.domNode.appendChild(this.filterTableContainer);
+                this.filerButtonTR = domConstruct.create("tr", {}, this.filterTableContainer);
+            }
+
+            var queryColumns = array.filter(this.gridStructure[0], function(column) {
+                return !column.hidden;
+            });
+            var columnsToQuery = [];
+            for (var i = 0; i < queryColumns.length; i++) {
+                var columnTo = {};
+                columnTo.id = queryColumns[i].name;
+                columnTo.name = queryColumns[i].name;
+                columnsToQuery.push(columnTo);
+            }
+            this.filterFieldSelect = this.getFilteringList(columnsToQuery, "Filter", "Filter");
+            this._addTD(this.filterFieldSelect.domNode, this.filerButtonTR, "margin-left:1%", "0%");
+
+            this.filterTextBox = new TextBox({
+                placeholder: "Enter text to filter grid",
+                value: "",
+                style: "margin-left:0.5%; width:90%",
+                onKeyUp: function(event){
+                    if (event.keyCode === 13) {
+                         self.filterButton.onClick();
+                    }
+                }
+            });
+            this._addTD(this.filterTextBox.domNode, this.filerButtonTR, "margin-left:1%", "70%");
+
+            this.filterButton = new Button({
+                label: "Filter",
+                class: "solid searchTabButton",
+                spanLabel: true,
+                style: "margin-left:1%",
+                onClick: lang.hitch(this, function() {
+                    console.log(this.filterTextBox.value);
+                    var prop = this.filterFieldSelect.displayedValue;
+                    var value = "*"+this.filterTextBox.value+"*";
+                    var obj = {};
+                    obj[prop]=value;
+                    this.grid.filter(obj);
+                })
+            });
+            this._addTD(this.filterButton.domNode, this.filerButtonTR, "margin-left:1%", "0%");
+        },
+
         _resetGrid: function() {
             var requestParams = {
                 actionName: "getChoices",
@@ -142,6 +194,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             };
             this._callService(requestParams, lang.hitch(this, function(response) {
                 this._setGridStore(response.data);
+                this._createFilterTR();
             }));
         },
 
@@ -230,7 +283,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         _createGrid: function() {
             this.logEntry("_createGrid");
             var self = this;
-            dojo.require("dojox.grid.enhanced.plugins.IndirectSelection");
+            dojo.require("dojox.grid.enhanced.plugins.Filter");
             var grid = new EnhancedGrid({
                 store: this.gridStore,
                 structure: this.gridStructure,
@@ -239,6 +292,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 },
                 rowSelector: "20px",
             }, document.createElement('div'));
+            this._createFilterTR();
             return grid;
             this.logExit("_createGrid");
         },
@@ -263,8 +317,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                 lang.hitch(this, function() {
                                     this.objectTypeSelectValue = evt;
                                     self.propertySelect.set("value", "");
-                                    this.propertySelectValue= "";
-                                    var newStore = new dojo.data.ItemFileReadStore({data: {  identifier: "",  items: []}});
+                                    this.propertySelectValue = "";
+                                    var newStore = new dojo.data.ItemFileReadStore({
+                                        data: {
+                                            identifier: "",
+                                            items: []
+                                        }
+                                    });
                                     this.grid.setStore(newStore);
                                     this.gridStore = null;
                                     self._getProperties(evt);
@@ -409,7 +468,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
 
         _getStructure: function() {
             this.logEntry("_getStructure");
-            var structure = this.gridStructure = [
+            var structure = [
                 [{
                     "name": "PROPERTY",
                     "field": "PROPERTY",
@@ -464,7 +523,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 }, {
                     "name": "OBJECTTYPE",
                     "field": "OBJECTTYPE",
-                    "editable": true
+                    "editable": true,
+                    "hidden": true
                 }, {
                     "name": "ISUPDATED",
                     "field": "ISUPDATED",
