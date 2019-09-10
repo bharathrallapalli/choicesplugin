@@ -32,19 +32,26 @@ public class CEUtil {
         return sqlObject;
     }
 
-    public Map<String, String> getClassDefinitions(ObjectStore objectStore) {
+    public Map<String, String> getClassDefinitions(ObjectStore objectStore) throws Exception {
 
         SearchScope searchScope = new SearchScope(objectStore);
+        QueryOperations queryOperations = new QueryOperations();
         String query = "SELECT [Id], [Name], [DisplayName], [SymbolicName] FROM [ClassDefinition] WHERE [SymbolicName] like 'VGRT_%'";
         RepositoryRowSet rowSet = searchScope.fetchRows(getSearchSQL(query), null, null, new Boolean(true));
         Iterator<RepositoryRow> rowIterator = rowSet.iterator();
         Map<String, String> returnMap = new HashMap<String, String>();
         int count=0;
+        List<String> symolicNameList = new ArrayList<String>();
         while (rowIterator.hasNext()) {
             count++;
             RepositoryRow row = rowIterator.next();
-            returnMap.put(row.getProperties().getStringValue("SymbolicName"), row.getProperties().getStringValue("DisplayName"));
+            String symbolicName = row.getProperties().getStringValue("SymbolicName");
+            String displayName = row.getProperties().getStringValue("DisplayName");
+            symolicNameList.add(symbolicName);
+            returnMap.put(symbolicName, displayName);
         }
+        symolicNameList = queryOperations.filterClassDefinitions(symolicNameList);
+        returnMap.keySet().retainAll(symolicNameList);
         System.out.println("Query "+query);
         System.out.println("Results returned = "+count);
         return returnMap;

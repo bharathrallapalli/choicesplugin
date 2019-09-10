@@ -20,51 +20,83 @@ public class QueryOperations {
         }
     }
 
-    public List<Choices> getObjectTypes() throws Exception{
-		Statement stmt = null;
-		List<Choices> choices = new ArrayList<Choices>();
-		String query = "SELECT DISTINCT(OBJECTTYPE) FROM \"TOSCHEMA\".\"vgi_edschoices\"";
-		try {
-			stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
-			while (rs.next()) {
-				Choices choice = new Choices();
-				String OBJECTTYPE = rs.getString("OBJECTTYPE");
-				choice.setOBJECTTYPE(OBJECTTYPE);
-				choices.add(choice);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
-		return choices;
-	}
+    public List<Choices> getObjectTypes() throws Exception {
+        Statement stmt = null;
+        List<Choices> choices = new ArrayList<Choices>();
+        String query = "SELECT DISTINCT(OBJECTTYPE) FROM \"TOSCHEMA\".\"vgi_edschoices\"";
+        try {
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                Choices choice = new Choices();
+                String OBJECTTYPE = rs.getString("OBJECTTYPE");
+                choice.setOBJECTTYPE(OBJECTTYPE);
+                choices.add(choice);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+        return choices;
+    }
 
-	public List<Choices> getProperties(String objectType) throws Exception{
-		Statement stmt = null;
-		List<Choices> choices = new ArrayList<Choices>();
-		String query = "SELECT DISTINCT(PROPERTY) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE='"+objectType+"'";
-		try {
-			stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
-			while (rs.next()) {
-				Choices choice = new Choices();
-				String PROPERTY = rs.getString("PROPERTY");
-				choice.setPROPERTY(PROPERTY);
-				choices.add(choice);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (stmt != null) {
-				stmt.close();
-			}
-		}
-		return choices;
-	}
+    public List<String> filterClassDefinitions(List<String> classDefinitions) throws Exception {
+        Statement stmt = null;
+        List<Choices> choices = new ArrayList<Choices>();
+        String query = "SELECT DISTINCT(OBJECTTYPE) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE IN ";
+        String whereClause = "(";
+        for (String className : classDefinitions) {
+            whereClause = whereClause + ("'"+className + "',");
+        }
+        StringBuilder queryBuilder = new StringBuilder(whereClause);
+        queryBuilder.replace(whereClause.lastIndexOf(","), whereClause.lastIndexOf(",") + 1, ")");
+        whereClause = queryBuilder.toString();
+        query = query + whereClause;
+        System.out.println("Class Definition Filter Query "+query);
+        try {
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            classDefinitions.clear();
+            while (rs.next()) {
+                String OBJECTTYPE = rs.getString("OBJECTTYPE");
+                classDefinitions.add(OBJECTTYPE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+
+        return classDefinitions;
+    }
+
+    public List<Choices> getProperties(String objectType) throws Exception {
+        Statement stmt = null;
+        List<Choices> choices = new ArrayList<Choices>();
+        String query = "SELECT DISTINCT(PROPERTY) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE='" + objectType + "'";
+        try {
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                Choices choice = new Choices();
+                String PROPERTY = rs.getString("PROPERTY");
+                choice.setPROPERTY(PROPERTY);
+                choices.add(choice);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+        return choices;
+    }
 
     public List<Choices> getChoices(String docClassName, String propertyName) throws Exception {
         Statement stmt = null;

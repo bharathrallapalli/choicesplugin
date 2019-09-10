@@ -154,7 +154,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 columnTo.name = queryColumns[i].name;
                 columnsToQuery.push(columnTo);
             }
-            this.filterFieldSelect = this.getFilteringList(columnsToQuery, "Filter", "Filter");
+            this.filterFieldSelect = this.getFilteringList(columnsToQuery, "Filter", "Filter", "margin-left:3%;");
             this._addTD(this.filterFieldSelect.domNode, this.filerButtonTR, "margin-left:1%", "0%");
 
             this.filterTextBox = new TextBox({
@@ -304,7 +304,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 actionName: "getObjectTypes"
             };
             this._callService(requestParams, lang.hitch(this, function(response) {
-                this.objectTypeSelect = this.getFilteringList(response.data, "Object Type", "objectType");
+                this.objectTypeSelect = this.getFilteringList(response.data, "Document Class", "objectType", "margin-left:3%; width:50%");
                 on(this.objectTypeSelect, "change", lang.hitch(this, function(evt) {
                     if (!this.gridStore) {
                         self.propertySelect.set("value", "");
@@ -398,7 +398,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this._callService(requestParams, lang.hitch(this, function(response) {
                 var self = this;
                 if (!this.propertySelect) {
-                    this.propertySelect = this.getFilteringList(response.data, "Property", "property");
+                    this.propertySelect = this.getFilteringList(response.data, "Property", "property", "margin-left:3%; width:50%");
                     on(this.propertySelect, "change", lang.hitch(this, function(evt) {
                         if (this.gridStore && evt !== this.propertySelectValue) {
                             if (this._checkForInProgressEdits()) {
@@ -450,7 +450,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             dialog.show();
         },
 
-        getFilteringList: function(data, labelval, name) {
+        getFilteringList: function(data, labelval, name, style) {
             this.logEntry("getFilteringList");
             var store = new Memory({
                 data: data
@@ -460,7 +460,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 label: labelval,
                 store: store,
                 searchAttr: "name",
-                style: "margin-left:3%"
+                style: style
             });
             return list;
             this.logExit("getFilteringList");

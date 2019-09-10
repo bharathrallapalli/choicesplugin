@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b7b30137-bd3b-47a3-902c-5dc783d208e9" name="Default Changelist" comment="" />
+    <list default="true" id="b7b30137-bd3b-47a3-902c-5dc783d208e9" name="Default Changelist" comment="Second Commit">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/choices/util/CEUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/choices/util/CEUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/net/choices/util/QueryOperations.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/net/choices/util/QueryOperations.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/net/choices/WebContent/choicesPluginDojo/ChoicesFeature.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/net/choices/WebContent/choicesPluginDojo/ChoicesFeature.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/choicesplugin-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/choicesplugin-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/ChoicesPlugin.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/ChoicesPlugin.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/WebContent/ChoicesPlugin.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/WebContent/ChoicesPlugin.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/WebContent/ChoicesPlugin.js" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/WebContent/ChoicesPlugin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/WebContent/choicesPluginDojo/ChoicesFeature.js" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/WebContent/choicesPluginDojo/ChoicesFeature.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/WebContent/choicesPluginDojo/ConfigurationPane.js" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/WebContent/choicesPluginDojo/ConfigurationPane.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/WebContent/choicesPluginDojo/templates/ConfigurationPane.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/WebContent/choicesPluginDojo/templates/ConfigurationPane.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/model/Choices.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/model/Choices.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/services/GetDataService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/services/GetDataService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/net/choices/util/QueryOperations.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/net/choices/util/QueryOperations.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MavenImportPreferences">
     <option name="importingSettings">
@@ -16,13 +45,22 @@
       </MavenImportingSettings>
     </option>
   </component>
+  <component name="MavenRunner">
+    <option name="skipTests" value="true" />
+  </component>
   <component name="ProjectId" id="1PuZmipcR9okliSqzxWQ24SRooa" />
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib/navigatorAPI.jar!/" />
-    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/JavaEJBclient/xlxpScannerUtils.jar!/" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="MavenSettings" />
+  </component>
+  <component name="RunAnythingCache">
+    <option name="myCommands">
+      <command value=" mvn install:install-file -Dfile=E:\Bharath Work\IdeaProjects\choicesplugin\lib\Jace-1.0.jar -DgroupId=com.ibm -DartifactId=Jace -Dversion=1.0 -Dpackaging=jar" />
+    </option>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -36,6 +74,40 @@
       </list>
     </option>
   </component>
+  <component name="RunManager" selected="Application.DB2Util">
+    <configuration name="DB2Util" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="net.choices.util.DB2Util" />
+      <module name="choicesplugin" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="net.choices.util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FileNetUtil" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="net.choices.util.FileNetUtil" />
+      <module name="choicesplugin" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="net.choices.util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.DB2Util" />
+        <item itemvalue="Application.FileNetUtil" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -47,6 +119,84 @@
       <option name="presentableId" value="Default" />
       <updated>1566726104458</updated>
     </task>
+    <task id="LOCAL-00001" summary="Second Commit">
+      <created>1567114163342</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1567114163342</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Second Commit">
+      <created>1567114291590</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1567114291590</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Property bug fixed">
+      <created>1567883470103</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1567883470103</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Second Commit">
+      <created>1567884960416</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1567884960416</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Second Commit">
+      <created>1567886114398</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1567886114398</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Property issue fixed">
+      <created>1567887294682</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1567887294685</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Added configuration pane and user access management">
+      <created>1568064732884</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1568064732884</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Filter added">
+      <created>1568070911459</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1568070911459</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Property bug fixed" />
+    <MESSAGE value="Second Commit" />
+    <MESSAGE value="Property issue fixed" />
+    <MESSAGE value="Added configuration pane and user access management" />
+    <MESSAGE value="Filter added" />
+    <option name="LAST_COMMIT_MESSAGE" value="Filter added" />
   </component>
 </project>

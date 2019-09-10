@@ -4,10 +4,12 @@
             <td class="propertyRowLabel">
                 <span class="required">*</span>
                 <label for="${id}_accessGroups">Access Groups:</label>&nbsp;
-                <div data-dojo-type="ecm.widget.HoverHelp" data-dojo-attach-point="accessGroupHelp" message="Enter comma seperated LDAp groups those has access to this feature"></div>
+                <div data-dojo-type="ecm.widget.HoverHelp" data-dojo-attach-point="accessGroupHelp" message="Enter comma separated
+                LDAP groups those has access to this feature"></div>
             </td>
             <td class="propertyRowValue">
-                <div id="${id}_accessGroups" data-dojo-attach-point="accessGroups" data-dojo-attach-event="onKeyUp: _onFieldChange" data-dojo-type="ecm.widget.ValidationTextBox" required="true" trim="true" propercase="false"></div>
+                <div rows="4" cols="50" id="${id}_accessGroups" data-dojo-attach-point="accessGroups" data-dojo-attach-event="onKeyUp: _onParamChange"
+                     data-dojo-type="dijit.form.Textarea" required="true" trim="true" propercase="false"></div>
             </td>
         </tr>
     </table>

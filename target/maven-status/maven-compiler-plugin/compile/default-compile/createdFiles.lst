@@ -1,6 +1,10 @@
 net\choices\util\JDBCConnection.class
+net\choices\util\DB2Util.class
 net\choices\util\QueryOperations.class
+net\choices\util\CEUtil.class
+net\choices\services\UserProfileService.class
 net\choices\ChoicesPlugin.class
 net\choices\feature\ChoicesFeature.class
 net\choices\model\Choices.class
 net\choices\services\GetDataService.class
+net\choices\util\FileNetUtil.class
