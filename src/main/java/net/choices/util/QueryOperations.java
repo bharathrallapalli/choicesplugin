@@ -3,6 +3,7 @@ package net.choices.util;
 import net.choices.model.Choices;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -140,6 +141,39 @@ public class QueryOperations {
             }
         }
         return choices;
+    }
+
+    public boolean insertRecords(List<Choices> choices) throws Exception{
+        boolean result = false;
+        String query = "INSERT INTO \"TOSCHEMA\".\"vgi_edschoices\" " +
+                "(OBJECTTYPE, PROPERTY, LISTDISPNAME, LANG, DISPNAME, VALUE, DEPON, DEPVALUE, ISACTIVE, c) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement ps = conn.prepareStatement(query);
+        try{
+            for (Choices choice : choices) {
+                ps.setString(1, choice.getOBJECTTYPE());
+                ps.setString(2, choice.getPROPERTY());
+                ps.setString(3, choice.getLISTDISPNAME());
+                ps.setString(4, choice.getLANG());
+                ps.setString(5, choice.getDISPNAME());
+                ps.setString(6, choice.getVALUE());
+                ps.setString(7, choice.getDEPON());
+                ps.setString(8, choice.getDEPVALUE());
+                ps.setString(9, choice.getISACTIVE());
+                ps.setString(10, choice.getOBJECTSTORE());
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            result = true;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        return result;
     }
 
 }

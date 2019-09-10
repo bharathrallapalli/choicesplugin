@@ -1,18 +1,18 @@
 define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
-    "dojox/grid/EnhancedGrid", "dojo/data/ItemFileWriteStore",
+    "dojox/grid/DataGrid", "dojo/data/ItemFileWriteStore",
     "dijit/form/TextBox", "ecm/model/Request", "dojo/_base/lang",
-    "dojox/layout/TableContainer", "dijit/form/FilteringSelect",
+    "dojox/layout/TableContainer", "ecm/widget/FilteringSelect",
     "dijit/form/Button", "dijit/layout/ContentPane", "dojo/store/Memory",
     "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
     "dojo/dom-style", "dojo/_base/array", "dojo/_base/connect",
     "ecm/widget/dialog/ConfirmationDialog", "dojo/_base/event",
-    "ecm/widget/dialog/MessageDialog",
+    "ecm/widget/dialog/MessageDialog","dojo/aspect",
     "dojo/text!./templates/ChoicesFeature.html"
 ], function(declare,
-    _LaunchBarPane, EnhancedGrid, ItemFileWriteStore, TextBox, Request,
+    _LaunchBarPane, DataGrid, ItemFileWriteStore, TextBox, Request,
     lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
     on, TitlePane, domConstruct, domStyle, array, connect, ConfirmationDialog,
-    event, MessageDialog, template) {
+    event, MessageDialog, aspect, template) {
     /**
      * @name choicesPluginDojo.ChoicesFeature
      * @class
@@ -64,8 +64,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         this.grid.sort();
                         var item = this.gridStore._arrayOfAllItems[0];
                         this.gridStore.newItem({
-                            DEPON: item.DEPON,
-                            DEPVALUE: item.DEPVALUE,
+                            DEPON: "",
+                            DEPVALUE: "",
                             DISPNAME: "",
                             ISACTIVE: false,
                             ISUPDATED: true,
@@ -135,11 +135,14 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         },
 
         _createFilterTR: function() {
-        var self =this;
+            var self = this;
             if (this.filerButtonTR) {
                 this.filerButtonTR.innerHTML = "";
             } else {
-                this.filterTableContainer = domConstruct.create("table", {style:"margin-left:50%", width:"50%"});
+                this.filterTableContainer = domConstruct.create("table", {
+                    style: "margin-left:50%",
+                    width: "50%"
+                });
                 this.actionButtonCP.domNode.appendChild(this.filterTableContainer);
                 this.filerButtonTR = domConstruct.create("tr", {}, this.filterTableContainer);
             }
@@ -161,9 +164,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 placeholder: "Enter text to filter grid",
                 value: "",
                 style: "margin-left:0.5%; width:90%",
-                onKeyUp: function(event){
+                onKeyUp: function(event) {
                     if (event.keyCode === 13) {
-                         self.filterButton.onClick();
+                        self.filterButton.onClick();
                     }
                 }
             });
@@ -177,9 +180,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 onClick: lang.hitch(this, function() {
                     console.log(this.filterTextBox.value);
                     var prop = this.filterFieldSelect.displayedValue;
-                    var value = "*"+this.filterTextBox.value+"*";
+                    var value = "*" + this.filterTextBox.value + "*";
                     var obj = {};
-                    obj[prop]=value;
+                    obj[prop] = value;
                     this.grid.filter(obj);
                 })
             });
@@ -257,6 +260,10 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         this._setGridStore(response.data);
                         this.gridStructure = this._getStructure();
                         this.grid = this._createGrid();
+                        connect.connect(this.grid, "onRowClick", this, function(row) {
+                            row.target.focus();
+
+                        })
                         this.resultsTitlePane.set("open", true);
                         this.gridContentPane.set("content", this.grid);
                         this.grid.startup();
@@ -283,10 +290,10 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         _createGrid: function() {
             this.logEntry("_createGrid");
             var self = this;
-            dojo.require("dojox.grid.enhanced.plugins.Filter");
-            var grid = new EnhancedGrid({
+            var grid = new DataGrid({
                 store: this.gridStore,
                 structure: this.gridStructure,
+                singleClickEdit: true,
                 onApplyCellEdit: function(inValue, inRowIndex, inField) {
                     self.grid.store._arrayOfAllItems[inRowIndex].ISUPDATED = true;
                 },
@@ -468,67 +475,106 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
 
         _getStructure: function() {
             this.logEntry("_getStructure");
+            var textBoxFormatter = function(item, rowId, cellId, cellField) {
+                var readOnly = true;
+                if (!item)
+                    readOnly = false;
+                var editor = new TextBox({
+                    value: item,
+                    readOnly: readOnly,
+                    style: "width:99%"
+                });
+                return editor;
+            };
+
+            var selectFormatter = function(item, rowId, cellId, cellField) {
+                if (item) {
+                    return item;
+                } else {
+                    var stateStore = new dojo.store.Memory({
+                            data: [
+                                {name:"Alabama", id:"AL"},
+                                {name:"Alaska", id:"AK"},
+                                {name:"American Samoa", id:"AS"},
+                                {name:"Arizona", id:"AZ"},
+                                {name:"Arkansas", id:"AR"},
+                                {name:"Armed Forces Europe", id:"AE"},
+                                {name:"Armed Forces Pacific", id:"AP"},
+                                {name:"Armed Forces the Americas", id:"AA"},
+                                {name:"California", id:"CA"},
+                                {name:"Colorado", id:"CO"},
+                                {name:"Connecticut", id:"CT"},
+                                {name:"Delaware", id:"DE"}
+                            ]
+                        });
+                    var editor = new FilteringSelect({
+                        style: "width:99%",
+                        store: stateStore,
+                        searchAttr: "name"
+                    });
+                    var superClassCloseDropDown = ecm.widget.FilteringSelect.prototype.closeDropDown;
+                    aspect.around(editor, 'closeDropDown', function(closeDropDown) {
+                      return function(focus) {
+                        if (focus == true) {
+                          closeDropDown.apply(this, arguments);
+                        }
+                      }
+                    });
+                    editor.startup();
+                    return editor;
+                }
+            };
+
             var structure = [
                 [{
                     "name": "PROPERTY",
                     "field": "PROPERTY",
-                    "editable": true,
-                    "width": "10%"
+                    "hidden": true
                 }, {
                     "name": "Column1",
                     "field": "id",
-                    "hidden": true,
-                    "width": "10%"
+                    "width": "10%",
+                    "hidden": true
                 }, {
                     "name": "LISTDISPNAME",
                     "field": "LISTDISPNAME",
-                    "editable": true,
                     "hidden": true
                 }, {
                     "name": "LANG",
                     "field": "LANG",
-                    "editable": true,
                     "hidden": true
                 }, {
                     "name": "DISPNAME",
                     "field": "DISPNAME",
-                    "editable": true,
-                    "width": "10%"
+                    "formatter": textBoxFormatter
                 }, {
                     "name": "VALUE",
                     "field": "VALUE",
-                    "editable": true,
-                    "width": "10%"
+                    "formatter": textBoxFormatter
                 }, {
                     "name": "DEPON",
                     "field": "DEPON",
-                    "editable": true,
-                    "hidden": true
+                    "formatter": selectFormatter
                 }, {
                     "name": "DEPVALUE",
                     "field": "DEPVALUE",
-                    "editable": true,
-                    "hidden": true
+                    "formatter": selectFormatter
                 }, {
                     "name": "ISACTIVE",
                     "field": "ISACTIVE",
                     "editable": true,
-                    "width": "10%",
                     "type": dojox.grid.cells.Bool
                 }, {
                     "name": "OBJECTSTORE",
                     "field": "OBJECTSTORE",
-                    "editable": true,
                     "hidden": true
                 }, {
                     "name": "OBJECTTYPE",
                     "field": "OBJECTTYPE",
-                    "editable": true,
                     "hidden": true
                 }, {
                     "name": "ISUPDATED",
                     "field": "ISUPDATED",
-                    "value": false,
                     "hidden": true
                 }, {
                     "name": "NEWINSERT",
