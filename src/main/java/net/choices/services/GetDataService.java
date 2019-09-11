@@ -42,9 +42,9 @@ public class GetDataService extends PluginService {
             String repositoryId = request.getParameter("repositoryId");
             QueryOperations queryOperations = new QueryOperations();
             JSONArray returnArray = new JSONArray();
+            ObjectStore objectStore = callbacks.getP8ObjectStore(repositoryId);
             if ("getObjectTypes".equals(actionName)) {
                 logger.logDebug(this, "execute", "Getting objectTypes");
-                ObjectStore objectStore = callbacks.getP8ObjectStore(repositoryId);
                 System.out.println("OS Symbolic Name " + objectStore.get_SymbolicName());
                 Map<String, String> classDefinitionsMap = ceUtil.getClassDefinitions(objectStore);
                 Iterator it = classDefinitionsMap.entrySet().iterator();
@@ -59,14 +59,42 @@ public class GetDataService extends PluginService {
             } else if ("getProperties".equals(actionName)) {
                 String objectType = request.getParameter("objectType");
                 logger.logDebug(this, "execute", "Getting properties for objectType " + objectType);
-                List<Choices> choices = queryOperations.getProperties(objectType);
-                for (Choices choice : choices) {
+                List<String> properties = queryOperations.getProperties(objectType);
+                Map<String, String> returnMap = ceUtil.getPropDisplayNames(objectStore,properties);
+                Iterator it = returnMap.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry entry = (Map.Entry) it.next();
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("name", choice.getPROPERTY());
-                    jsonObject.put("id", choice.getPROPERTY());
+                    jsonObject.put("name", entry.getValue());
+                    jsonObject.put("id", entry.getKey());
                     returnArray.add(jsonObject);
                 }
                 logger.logDebug(this, "execute", "Properties returned " + returnArray.size());
+            } else if ("getDEPON".equals(actionName)) {
+                String objectType = request.getParameter("objectType");
+                String property = request.getParameter("property");
+                logger.logDebug(this, "execute", "Getting DEPON for objectType and property " + objectType);
+                List<String> deponList = queryOperations.getDEPON(objectType, property);
+                for (String value : deponList) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", value);
+                    jsonObject.put("id", value);
+                    returnArray.add(jsonObject);
+                }
+                logger.logDebug(this, "execute", "DEPON returned " + returnArray.size());
+            } else if ("getDEPVALUE".equals(actionName)) {
+                String objectType = request.getParameter("objectType");
+                String property = request.getParameter("property");
+                String depon = request.getParameter("depon");
+                logger.logDebug(this, "execute", "Getting DEPVALUE for objectType, property and depon " + objectType);
+                List<String> depvalueList = queryOperations.getDEPVALUES(objectType, property, depon);
+                for (String value : depvalueList) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", value);
+                    jsonObject.put("id", value);
+                    returnArray.add(jsonObject);
+                }
+                logger.logDebug(this, "execute", "DEPVALUE returned " + returnArray.size());
             } else if ("getChoices".equals(actionName)) {
                 String objectType = request.getParameter("objectType");
                 String property = request.getParameter("property");
@@ -96,6 +124,15 @@ public class GetDataService extends PluginService {
                     jsonObject.put("OBJECTTYPE", choice.getOBJECTTYPE());
                     returnArray.add(jsonObject);
                 }
+                List<String> deponList = queryOperations.getDEPON(objectType, property);
+                JSONArray deponArray = new JSONArray();
+                for (String value : deponList) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", value);
+                    jsonObject.put("id", value);
+                    deponArray.add(jsonObject);
+                }
+                jsonResponse.put("deponData", deponArray);
                 logger.logDebug(this, "execute", "Returned choices for objectType " + objectType + " and property " + property + " = " + returnArray.size());
             }
             jsonResponse.put("data", returnArray);

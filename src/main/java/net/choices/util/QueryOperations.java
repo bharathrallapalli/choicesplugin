@@ -76,18 +76,16 @@ public class QueryOperations {
         return classDefinitions;
     }
 
-    public List<Choices> getProperties(String objectType) throws Exception {
+    public List<String> getProperties(String objectType) throws Exception {
         Statement stmt = null;
-        List<Choices> choices = new ArrayList<Choices>();
+        List<String> properties = new ArrayList<String>();
         String query = "SELECT DISTINCT(PROPERTY) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE='" + objectType + "'";
         try {
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                Choices choice = new Choices();
                 String PROPERTY = rs.getString("PROPERTY");
-                choice.setPROPERTY(PROPERTY);
-                choices.add(choice);
+                properties.add(PROPERTY);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,7 +94,55 @@ public class QueryOperations {
                 stmt.close();
             }
         }
-        return choices;
+        return properties;
+    }
+
+     public List<String> getDEPON(String objectType, String property) throws Exception {
+        Statement stmt = null;
+        List<String> values = new ArrayList<String>();
+        String query = "SELECT DISTINCT(DEPON) FROM \"TOSCHEMA\".\"vgi_edschoices\" where " +
+                "OBJECTTYPE='" + objectType + "' \n" +
+                "and PROPERTY='" + property + "'";
+        try {
+            System.out.println("Getting DEPON "+query);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                String DEPON = rs.getString("DEPON");
+                values.add(DEPON);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+        return values;
+    }
+
+    public List<String> getDEPVALUES(String objectType, String property, String depon) throws Exception {
+        Statement stmt = null;
+        List<String> values = new ArrayList<String>();
+        String query = "SELECT DISTINCT(DEPVALUE) FROM \"TOSCHEMA\".\"vgi_edschoices\" where " +
+                "OBJECTTYPE='" + objectType + "' \n" +
+                "and PROPERTY='" + property + "' and DEPON = '"+depon+"'";
+        try {
+            System.out.println("Getting DEPAVLUE "+query);
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                String DEPVALUE = rs.getString("DEPVALUE");
+                values.add(DEPVALUE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+        }
+        return values;
     }
 
     public List<Choices> getChoices(String docClassName, String propertyName) throws Exception {
@@ -146,20 +192,17 @@ public class QueryOperations {
     public boolean insertRecords(List<Choices> choices) throws Exception{
         boolean result = false;
         String query = "INSERT INTO \"TOSCHEMA\".\"vgi_edschoices\" " +
-                "(OBJECTTYPE, PROPERTY, LISTDISPNAME, LANG, DISPNAME, VALUE, DEPON, DEPVALUE, ISACTIVE, c) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(OBJECTTYPE, PROPERTY,  DISPNAME, VALUE, DEPON, DEPVALUE, ISACTIVE) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(query);
         try{
             for (Choices choice : choices) {
                 ps.setString(1, choice.getOBJECTTYPE());
                 ps.setString(2, choice.getPROPERTY());
-                ps.setString(3, choice.getLISTDISPNAME());
-                ps.setString(4, choice.getLANG());
-                ps.setString(5, choice.getDISPNAME());
-                ps.setString(6, choice.getVALUE());
-                ps.setString(7, choice.getDEPON());
-                ps.setString(8, choice.getDEPVALUE());
-                ps.setString(9, choice.getISACTIVE());
-                ps.setString(10, choice.getOBJECTSTORE());
+                ps.setString(3, choice.getDISPNAME());
+                ps.setString(4, choice.getVALUE());
+                ps.setString(5, choice.getDEPON());
+                ps.setString(6, choice.getDEPVALUE());
+                ps.setString(7, choice.getISACTIVE());
                 ps.addBatch();
             }
             ps.executeBatch();

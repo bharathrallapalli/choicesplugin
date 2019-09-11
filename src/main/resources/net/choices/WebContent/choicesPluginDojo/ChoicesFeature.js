@@ -6,13 +6,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
     "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
     "dojo/dom-style", "dojo/_base/array", "dojo/_base/connect",
     "ecm/widget/dialog/ConfirmationDialog", "dojo/_base/event",
-    "ecm/widget/dialog/MessageDialog","dojo/aspect",
+    "ecm/widget/dialog/MessageDialog", "dojo/aspect", "dijit/form/CheckBox",
     "dojo/text!./templates/ChoicesFeature.html"
 ], function(declare,
     _LaunchBarPane, DataGrid, ItemFileWriteStore, TextBox, Request,
     lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
     on, TitlePane, domConstruct, domStyle, array, connect, ConfirmationDialog,
-    event, MessageDialog, aspect, template) {
+    event, MessageDialog, aspect, CheckBox, template) {
     /**
      * @name choicesPluginDojo.ChoicesFeature
      * @class
@@ -258,6 +258,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     };
                     this._callService(requestParams, lang.hitch(this, function(response) {
                         this._setGridStore(response.data);
+                        this._setDEPONStore(response.deponData);
                         this.gridStructure = this._getStructure();
                         this.grid = this._createGrid();
                         connect.connect(this.grid, "onRowClick", this, function(row) {
@@ -272,6 +273,16 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 })
             });
             this.logExit("postCreate");
+        },
+
+        _setDEPONStore: function(data) {
+            this.deponData = {
+                identifier: "id",
+                items: data
+            };
+            this.deponStore = new ItemFileWriteStore({
+                data: this.deponData
+            });
         },
 
         _setGridStore: function(data) {
@@ -294,9 +305,6 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 store: this.gridStore,
                 structure: this.gridStructure,
                 singleClickEdit: true,
-                onApplyCellEdit: function(inValue, inRowIndex, inField) {
-                    self.grid.store._arrayOfAllItems[inRowIndex].ISUPDATED = true;
-                },
                 rowSelector: "20px",
             }, document.createElement('div'));
             this._createFilterTR();
@@ -473,56 +481,113 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.logExit("getFilteringList");
         },
 
+        _setDepvaluStore: function(data) {
+            this.depvalueData = {
+                identifier: "id",
+                items: data
+            };
+            this.depvalueStore = new ItemFileWriteStore({
+                data: this.depvalueData
+            });
+        },
+
         _getStructure: function() {
             this.logEntry("_getStructure");
-            var textBoxFormatter = function(item, rowId, cellId, cellField) {
+            this._setDepvaluStore([{id:"",value:""}]);
+            var curObj = this;
+            var textBoxFormatter = function(itemValue, rowId, cellId, cellField) {
                 var readOnly = true;
-                if (!item)
+                var item = curObj.grid.getItem(rowId);
+                if (!itemValue || item.NEWINSERT[0])
                     readOnly = false;
                 var editor = new TextBox({
-                    value: item,
+                    value: itemValue,
+                    style: "width:99%",
                     readOnly: readOnly,
-                    style: "width:99%"
+                    onChange: function(value) {
+                        var item = curObj.grid.getItem(rowId);
+                        curObj.gridStore.setValue(item, cellId.field, value);
+                    }
                 });
                 return editor;
             };
 
-            var selectFormatter = function(item, rowId, cellId, cellField) {
-                if (item) {
-                    return item;
+            var selectDEPONFormatter = function(itemValue, rowId, cellId, cellField) {
+                var item = curObj.grid.getItem(rowId);
+                if (itemValue && !item.NEWINSERT[0]) {
+                    return itemValue;
                 } else {
-                    var stateStore = new dojo.store.Memory({
-                            data: [
-                                {name:"Alabama", id:"AL"},
-                                {name:"Alaska", id:"AK"},
-                                {name:"American Samoa", id:"AS"},
-                                {name:"Arizona", id:"AZ"},
-                                {name:"Arkansas", id:"AR"},
-                                {name:"Armed Forces Europe", id:"AE"},
-                                {name:"Armed Forces Pacific", id:"AP"},
-                                {name:"Armed Forces the Americas", id:"AA"},
-                                {name:"California", id:"CA"},
-                                {name:"Colorado", id:"CO"},
-                                {name:"Connecticut", id:"CT"},
-                                {name:"Delaware", id:"DE"}
-                            ]
-                        });
                     var editor = new FilteringSelect({
                         style: "width:99%",
-                        store: stateStore,
-                        searchAttr: "name"
+                        value:itemValue,
+                        store: curObj.deponStore,
+                        searchAttr: "name",
+                        onChange: function(value) {
+                            var requestParams = {
+                                actionName: "getDEPVALUE",
+                                objectType: curObj.objectTypeSelectValue,
+                                property: curObj.propertySelectValue,
+                                depon: value
+                            };
+                            curObj._callService(requestParams, lang.hitch(this, function(response) {
+                                curObj._setDepvaluStore(response.data);
+                                var item = curObj.grid.getItem(rowId);
+                                curObj.gridStore.setValue(item, cellId.field, value);
+                            }));
+                        }
                     });
                     var superClassCloseDropDown = ecm.widget.FilteringSelect.prototype.closeDropDown;
                     aspect.around(editor, 'closeDropDown', function(closeDropDown) {
-                      return function(focus) {
-                        if (focus == true) {
-                          closeDropDown.apply(this, arguments);
+                        return function(focus) {
+                            if (focus == true) {
+                                closeDropDown.apply(this, arguments);
+                            }
                         }
-                      }
                     });
                     editor.startup();
                     return editor;
                 }
+            };
+
+            var selectDEPVALUEFormatter = function(itemValue, rowId, cellId, cellField) {
+                var item = curObj.grid.getItem(rowId);
+                if (itemValue && !item.NEWINSERT[0]) {
+                    return itemValue;
+                } else {
+                    var editor = new FilteringSelect({
+                        style: "width:99%",
+                        store: curObj.depvalueStore,
+                        value: itemValue,
+                        searchAttr: "name",
+                        onChange: function(value) {
+                            var item = curObj.grid.getItem(rowId);
+                            curObj.gridStore.setValue(item, cellId.field, value);
+                        }
+                    });
+                    var superClassCloseDropDown = ecm.widget.FilteringSelect.prototype.closeDropDown;
+                    aspect.around(editor, 'closeDropDown', function(closeDropDown) {
+                        return function(focus) {
+                            if (focus == true) {
+                                closeDropDown.apply(this, arguments);
+                            }
+                        }
+                    });
+                    editor.startup();
+                    return editor;
+                }
+            };
+
+            var checkBoxFormatter = function(itemValue, rowId, cellId, cellField) {
+                var editor = new CheckBox({
+                    checked: itemValue,
+                    onChange: function(newVal){
+                     var item = curObj.grid.getItem(rowId);
+                     curObj.gridStore.setValue(item, cellId.field, newVal);
+                     curObj.gridStore.setValue(item, "ISUPDATED", true);
+                    }
+                });
+                editor.startup();
+                return editor;
             };
 
             var structure = [
@@ -531,9 +596,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     "field": "PROPERTY",
                     "hidden": true
                 }, {
-                    "name": "Column1",
+                    "name": "ID",
                     "field": "id",
-                    "width": "10%",
+                    "width":"10%",
                     "hidden": true
                 }, {
                     "name": "LISTDISPNAME",
@@ -554,20 +619,15 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 }, {
                     "name": "DEPON",
                     "field": "DEPON",
-                    "formatter": selectFormatter
+                    "formatter": selectDEPONFormatter
                 }, {
                     "name": "DEPVALUE",
                     "field": "DEPVALUE",
-                    "formatter": selectFormatter
+                    "formatter": selectDEPVALUEFormatter
                 }, {
                     "name": "ISACTIVE",
                     "field": "ISACTIVE",
-                    "editable": true,
-                    "type": dojox.grid.cells.Bool
-                }, {
-                    "name": "OBJECTSTORE",
-                    "field": "OBJECTSTORE",
-                    "hidden": true
+                    "formatter": checkBoxFormatter
                 }, {
                     "name": "OBJECTTYPE",
                     "field": "OBJECTTYPE",

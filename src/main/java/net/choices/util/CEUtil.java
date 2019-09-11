@@ -57,6 +57,35 @@ public class CEUtil {
         return returnMap;
     }
 
+    public Map<String, String> getPropDisplayNames(ObjectStore objectStore, List<String> symbolicNameList) throws Exception {
+
+        SearchScope searchScope = new SearchScope(objectStore);
+        QueryOperations queryOperations = new QueryOperations();
+        String query = "SELECT [This], [DisplayName], [SymbolicName], [Id] FROM [PropertyTemplate] WHERE [SymbolicName] IN ";
+        String whereClause = "(";
+        for (String symbolicName : symbolicNameList) {
+            whereClause = whereClause + ("'"+symbolicName + "',");
+        }
+        StringBuilder queryBuilder = new StringBuilder(whereClause);
+        queryBuilder.replace(whereClause.lastIndexOf(","), whereClause.lastIndexOf(",") + 1, ")");
+        whereClause = queryBuilder.toString();
+        query = query + whereClause;
+        RepositoryRowSet rowSet = searchScope.fetchRows(getSearchSQL(query), null, null, new Boolean(true));
+        Iterator<RepositoryRow> rowIterator = rowSet.iterator();
+        Map<String, String> returnMap = new HashMap<String, String>();
+        int count=0;
+        while (rowIterator.hasNext()) {
+            count++;
+            RepositoryRow row = rowIterator.next();
+            String symbolicName = row.getProperties().getStringValue("SymbolicName");
+            String displayName = row.getProperties().getStringValue("DisplayName");
+            returnMap.put(symbolicName, displayName);
+        }
+        System.out.println("Query "+query);
+        System.out.println("Results returned = "+count);
+        return returnMap;
+    }
+
     public boolean checkGroupMembership(String userId, ObjectStore objectStore, List<String> accessGroups) throws Exception{
         objectStore = Factory.ObjectStore.fetchInstance(objectStore.get_Domain(), objectStore.get_Id(), null);
         System.out.println("Connection "+objectStore.getConnection());
