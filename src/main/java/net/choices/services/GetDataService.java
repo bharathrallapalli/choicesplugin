@@ -14,6 +14,7 @@ import net.choices.util.QueryOperations;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,12 @@ public class GetDataService extends PluginService {
             logger.logInfo(this, "execute", "Enter");
             String actionName = request.getParameter("actionName");
             String repositoryId = request.getParameter("repositoryId");
-            QueryOperations queryOperations = new QueryOperations();
-            JSONArray returnArray = new JSONArray();
             ObjectStore objectStore = callbacks.getP8ObjectStore(repositoryId);
+            System.out.println("Repository ID "+repositoryId);
+            String table_name = CEUtil.properties.getProperty(objectStore.get_SymbolicName()+"_TABLENAME");
+            System.out.println("Table Name "+table_name);
+            QueryOperations queryOperations = new QueryOperations(table_name);
+            JSONArray returnArray = new JSONArray();
             if ("getObjectTypes".equals(actionName)) {
                 logger.logDebug(this, "execute", "Getting objectTypes");
                 System.out.println("OS Symbolic Name " + objectStore.get_SymbolicName());
@@ -60,7 +64,7 @@ public class GetDataService extends PluginService {
                 String objectType = request.getParameter("objectType");
                 logger.logDebug(this, "execute", "Getting properties for objectType " + objectType);
                 List<String> properties = queryOperations.getProperties(objectType);
-                Map<String, String> returnMap = ceUtil.getPropDisplayNames(objectStore,properties);
+                Map<String, String> returnMap = ceUtil.getPropDisplayNames(objectStore, properties);
                 Iterator it = returnMap.entrySet().iterator();
                 while (it.hasNext()) {
                     Map.Entry entry = (Map.Entry) it.next();
@@ -125,6 +129,11 @@ public class GetDataService extends PluginService {
                     returnArray.add(jsonObject);
                 }
                 List<String> deponList = queryOperations.getDEPON(objectType, property);
+                List<String> depValList = null;
+                if (deponList.size() == 1) {
+                    depValList = queryOperations.getDEPVALUES(objectType, property, deponList.get(0));
+                }
+                JSONArray depValArray = new JSONArray();
                 JSONArray deponArray = new JSONArray();
                 for (String value : deponList) {
                     JSONObject jsonObject = new JSONObject();
@@ -132,11 +141,57 @@ public class GetDataService extends PluginService {
                     jsonObject.put("id", value);
                     deponArray.add(jsonObject);
                 }
+                for (String value : depValList) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("name", value);
+                    jsonObject.put("id", value);
+                    depValArray.add(jsonObject);
+                }
                 jsonResponse.put("deponData", deponArray);
+                jsonResponse.put("depValData", depValArray);
                 logger.logDebug(this, "execute", "Returned choices for objectType " + objectType + " and property " + property + " = " + returnArray.size());
+            }
+            else if("saveData".equals(actionName)){
+                JSONArray insertedRows = JSONArray.parse(request.getParameter("insertedRows"));
+                JSONArray updatedRows = JSONArray.parse(request.getParameter("updatedRows"));
+                List<Choices> choiceArray = new ArrayList<Choices>();
+                for(int i=0; i<insertedRows.size(); i++){
+                    JSONObject row = (JSONObject) insertedRows.get(i);
+                    Choices choice = new Choices();
+                    choice.setPROPERTY(row.get("PROPERTY").toString());
+                    choice.setOBJECTTYPE(row.get("OBJECTTYPE").toString());
+                    choice.setDISPNAME(row.get("DISPNAME").toString());
+                    choice.setDEPON(row.get("DEPON").toString());
+                    choice.setDEPVALUE(row.get("DEPVALUE").toString());
+                    choice.setVALUE(row.get("VALUE").toString());
+                    choice.setISACTIVE(row.get("ISACTIVE").toString());
+                    choiceArray.add(choice);
+                }
+                if(choiceArray.size()>0)
+                queryOperations.insertRecords(choiceArray);
+                choiceArray = new ArrayList<Choices>();
+                for(int i=0; i<updatedRows.size(); i++){
+                    JSONObject row = (JSONObject) updatedRows.get(i);
+                    Choices choice = new Choices();
+                    choice.setPROPERTY(row.get("PROPERTY").toString());
+                    choice.setOBJECTTYPE(row.get("OBJECTTYPE").toString());
+                    choice.setDISPNAME(row.get("DISPNAME").toString());
+                    choice.setDEPON(row.get("DEPON").toString());
+                    choice.setDEPVALUE(row.get("DEPVALUE").toString());
+                    choice.setVALUE(row.get("VALUE").toString());
+                    choice.setISACTIVE(row.get("ISACTIVE").toString());
+                    choiceArray.add(choice);
+                }
+                if(choiceArray.size()>0)
+                queryOperations.updateRecords(choiceArray);
+                JSONObject jso = new JSONObject();
+                jso.put("data","Records Inserted");
+                returnArray.add(jso);
+                jsonResponse.put("status","success");
             }
             jsonResponse.put("data", returnArray);
         } catch (Exception e) {
+            e.printStackTrace();
             jsonResponse.put("status", "error");
             jsonResponse.put("message", e.getMessage());
             logger.logError(this, "execute", e);

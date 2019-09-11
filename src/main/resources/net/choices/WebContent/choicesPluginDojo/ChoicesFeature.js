@@ -64,7 +64,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         this.grid.sort();
                         var item = this.gridStore._arrayOfAllItems[0];
                         this.gridStore.newItem({
-                            DEPON: "",
+                            DEPON: item.DEPON,
                             DEPVALUE: "",
                             DISPNAME: "",
                             ISACTIVE: false,
@@ -92,7 +92,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 onClick: lang.hitch(this, function() {
 
                     var inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                        return !item.VALUE[0] || !item.DISPNAME[0];
+                        return !item.VALUE[0] || !item.DISPNAME[0] || !item.DEPVALUE[0];
                     });
                     if (inProgressEdits.length > 0) {
                         this._showMessageDialog("Add Error", "Invalid Data! Please correct invalid records before saving");
@@ -103,13 +103,37 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
                             return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
                         });
+                        var convertJSON = function(data) {
+                            var valArray = [];
+                            for (var i = 0; i < data.length; i++) {
+                                var obj = {
+                                    OBJECTTYPE: data[i].OBJECTTYPE[0],
+                                    PROPERTY: data[i].PROPERTY[0],
+                                    DISPNAME: data[i].DISPNAME[0],
+                                    VALUE: data[i].VALUE[0],
+                                    ISACTIVE: data[i].ISACTIVE[0],
+                                    DEPVALUE: data[i].DEPVALUE[0],
+                                    DEPON: data[i].DEPON[0]
+                                };
+                                valArray.push(obj);
+                            }
+                            return valArray;
+                        }
                         var requestParams = {
-                            actionName: "setChoices",
+                            actionName: "saveData",
                             objectType: this.objectTypeSelectValue,
                             property: this.propertySelectValue,
-                            insertedRows: insertedRows,
-                            updatedRows: updatedRows
+                            insertedRows: JSON.stringify(convertJSON(insertedRows)),
+                            updatedRows: JSON.stringify(convertJSON(updatedRows))
                         };
+                        this._callService(requestParams, lang.hitch(this, function(response) {
+                            if (response.status && response.status === "success") {
+                                this._showMessageDialog("Save Data", "Data saved successfully");
+                                this._resetGrid();
+                            } else {
+                                this._showMessageDialog("Save Data", "Error saving data");
+                            }
+                        }));
                         console.log(requestParams);
                     }
 
@@ -259,7 +283,12 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     this._callService(requestParams, lang.hitch(this, function(response) {
                         this._setGridStore(response.data);
                         this._setDEPONStore(response.deponData);
-                        this.gridStructure = this._getStructure();
+                        var setDepVal = true;
+                        if (response.depValData && response.depValData.length > 0) {
+                            setDepVal = false;
+                            this._setDepvaluStore(response.depValData);
+                        }
+                        this.gridStructure = this._getStructure(setDepVal);
                         this.grid = this._createGrid();
                         connect.connect(this.grid, "onRowClick", this, function(row) {
                             row.target.focus();
@@ -491,15 +520,25 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             });
         },
 
-        _getStructure: function() {
+        _getStructure: function(setDepVal) {
             this.logEntry("_getStructure");
-            this._setDepvaluStore([{id:"",value:""}]);
+            if (setDepVal) {
+                this._setDepvaluStore([{
+                    id: "",
+                    value: ""
+                }]);
+            }
             var curObj = this;
             var textBoxFormatter = function(itemValue, rowId, cellId, cellField) {
                 var readOnly = true;
                 var item = curObj.grid.getItem(rowId);
-                if (!itemValue || item.NEWINSERT[0])
+                if (!item.NEWINSERT[0]) {
+                    return itemValue;
+                }
+                if (!itemValue || item.NEWINSERT[0]) {
                     readOnly = false;
+                }
+
                 var editor = new TextBox({
                     value: itemValue,
                     style: "width:99%",
@@ -519,7 +558,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 } else {
                     var editor = new FilteringSelect({
                         style: "width:99%",
-                        value:itemValue,
+                        value: itemValue,
                         store: curObj.deponStore,
                         searchAttr: "name",
                         onChange: function(value) {
@@ -580,10 +619,10 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             var checkBoxFormatter = function(itemValue, rowId, cellId, cellField) {
                 var editor = new CheckBox({
                     checked: itemValue,
-                    onChange: function(newVal){
-                     var item = curObj.grid.getItem(rowId);
-                     curObj.gridStore.setValue(item, cellId.field, newVal);
-                     curObj.gridStore.setValue(item, "ISUPDATED", true);
+                    onChange: function(newVal) {
+                        var item = curObj.grid.getItem(rowId);
+                        curObj.gridStore.setValue(item, cellId.field, newVal);
+                        curObj.gridStore.setValue(item, "ISUPDATED", true);
                     }
                 });
                 editor.startup();
@@ -598,7 +637,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 }, {
                     "name": "ID",
                     "field": "id",
-                    "width":"10%",
+                    "width": "10%",
                     "hidden": true
                 }, {
                     "name": "LISTDISPNAME",

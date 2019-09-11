@@ -14,13 +14,14 @@ import java.io.InputStream;
 import java.util.*;
 
 public class CEUtil {
-    static Properties properties;
+    public static Properties properties;
 
     static {
         InputStream input = CEUtil.class.getClassLoader().getResourceAsStream("config.properties");
         try {
+            System.out.println("Property input stream "+input);
+            properties= new Properties();
             properties.load(input);
-            input.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -32,11 +33,13 @@ public class CEUtil {
         return sqlObject;
     }
 
+
     public Map<String, String> getClassDefinitions(ObjectStore objectStore) throws Exception {
 
         SearchScope searchScope = new SearchScope(objectStore);
         QueryOperations queryOperations = new QueryOperations();
-        String query = "SELECT [Id], [Name], [DisplayName], [SymbolicName] FROM [ClassDefinition] WHERE [SymbolicName] like 'VGRT_%'";
+        String filter = CEUtil.properties.getProperty(objectStore.get_SymbolicName());
+        String query = "SELECT [Id], [Name], [DisplayName], [SymbolicName] FROM [ClassDefinition] WHERE [SymbolicName] like '"+filter+"_%'";
         RepositoryRowSet rowSet = searchScope.fetchRows(getSearchSQL(query), null, null, new Boolean(true));
         Iterator<RepositoryRow> rowIterator = rowSet.iterator();
         Map<String, String> returnMap = new HashMap<String, String>();

@@ -12,6 +12,7 @@ import java.util.List;
 public class QueryOperations {
 
     private static Connection conn = null;
+    public String table_name;
 
     static {
         try {
@@ -21,10 +22,18 @@ public class QueryOperations {
         }
     }
 
+    public QueryOperations(String table_name){
+        this.table_name=table_name;
+    }
+
+    public QueryOperations(){
+
+    }
+
     public List<Choices> getObjectTypes() throws Exception {
         Statement stmt = null;
         List<Choices> choices = new ArrayList<Choices>();
-        String query = "SELECT DISTINCT(OBJECTTYPE) FROM \"TOSCHEMA\".\"vgi_edschoices\"";
+        String query = "SELECT DISTINCT(OBJECTTYPE) FROM "+table_name;
         try {
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -47,7 +56,7 @@ public class QueryOperations {
     public List<String> filterClassDefinitions(List<String> classDefinitions) throws Exception {
         Statement stmt = null;
         List<Choices> choices = new ArrayList<Choices>();
-        String query = "SELECT DISTINCT(OBJECTTYPE) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE IN ";
+        String query = "SELECT DISTINCT(OBJECTTYPE) FROM "+table_name+" where OBJECTTYPE IN ";
         String whereClause = "(";
         for (String className : classDefinitions) {
             whereClause = whereClause + ("'"+className + "',");
@@ -79,7 +88,8 @@ public class QueryOperations {
     public List<String> getProperties(String objectType) throws Exception {
         Statement stmt = null;
         List<String> properties = new ArrayList<String>();
-        String query = "SELECT DISTINCT(PROPERTY) FROM \"TOSCHEMA\".\"vgi_edschoices\" where OBJECTTYPE='" + objectType + "'";
+        String query = "SELECT DISTINCT(PROPERTY) FROM "+table_name+" where OBJECTTYPE='" + objectType + "'";
+        System.out.println("Get Props Query "+query);
         try {
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
@@ -100,7 +110,7 @@ public class QueryOperations {
      public List<String> getDEPON(String objectType, String property) throws Exception {
         Statement stmt = null;
         List<String> values = new ArrayList<String>();
-        String query = "SELECT DISTINCT(DEPON) FROM \"TOSCHEMA\".\"vgi_edschoices\" where " +
+        String query = "SELECT DISTINCT(DEPON) FROM "+table_name+" where " +
                 "OBJECTTYPE='" + objectType + "' \n" +
                 "and PROPERTY='" + property + "'";
         try {
@@ -124,7 +134,7 @@ public class QueryOperations {
     public List<String> getDEPVALUES(String objectType, String property, String depon) throws Exception {
         Statement stmt = null;
         List<String> values = new ArrayList<String>();
-        String query = "SELECT DISTINCT(DEPVALUE) FROM \"TOSCHEMA\".\"vgi_edschoices\" where " +
+        String query = "SELECT DISTINCT(DEPVALUE) FROM "+table_name+" where " +
                 "OBJECTTYPE='" + objectType + "' \n" +
                 "and PROPERTY='" + property + "' and DEPON = '"+depon+"'";
         try {
@@ -149,7 +159,7 @@ public class QueryOperations {
         Statement stmt = null;
         List<Choices> choices = new ArrayList<Choices>();
         String query = "SELECT OBJECTTYPE, PROPERTY, LISTDISPNAME, LANG, DISPNAME, VALUE, DEPON, DEPVALUE, " +
-                "ISACTIVE, OBJECTSTORE FROM \"TOSCHEMA\".\"vgi_edschoices\" where " +
+                "ISACTIVE, OBJECTSTORE FROM "+table_name+" where " +
                 "OBJECTTYPE='" + docClassName + "' \n" +
                 "and PROPERTY='" + propertyName + "'";
         try {
@@ -191,7 +201,7 @@ public class QueryOperations {
 
     public boolean insertRecords(List<Choices> choices) throws Exception{
         boolean result = false;
-        String query = "INSERT INTO \"TOSCHEMA\".\"vgi_edschoices\" " +
+        String query = "INSERT INTO "+table_name+" " +
                 "(OBJECTTYPE, PROPERTY,  DISPNAME, VALUE, DEPON, DEPVALUE, ISACTIVE) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = conn.prepareStatement(query);
         try{
@@ -202,7 +212,43 @@ public class QueryOperations {
                 ps.setString(4, choice.getVALUE());
                 ps.setString(5, choice.getDEPON());
                 ps.setString(6, choice.getDEPVALUE());
-                ps.setString(7, choice.getISACTIVE());
+                if("true".equals(choice.getISACTIVE())){
+                    ps.setString(7, "y");
+                }else if("false".equals(choice.getISACTIVE())){
+                    ps.setString(7, "n");
+                }
+                ps.addBatch();
+            }
+            ps.executeBatch();
+            result = true;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        return result;
+    }
+
+    public boolean updateRecords(List<Choices> choices) throws Exception{
+        boolean result = false;
+        String query = "UPDATE "+table_name+" " +
+                "SET ISACTIVE=? WHERE OBJECTTYPE = ? and PROPERTY = ? and DISPNAME = ? and VALUE = ?";
+        PreparedStatement ps = conn.prepareStatement(query);
+        try{
+            for (Choices choice : choices) {
+                if("true".equals(choice.getISACTIVE())){
+                    ps.setString(1, "y");
+                }else if("false".equals(choice.getISACTIVE())){
+                    ps.setString(1, "n");
+                }
+                ps.setString(2, choice.getOBJECTTYPE());
+                ps.setString(3, choice.getPROPERTY());
+                ps.setString(4, choice.getDISPNAME());
+                ps.setString(5, choice.getVALUE());
                 ps.addBatch();
             }
             ps.executeBatch();
