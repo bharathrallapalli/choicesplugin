@@ -37,7 +37,7 @@ public class CEUtil {
     public Map<String, String> getClassDefinitions(ObjectStore objectStore) throws Exception {
 
         SearchScope searchScope = new SearchScope(objectStore);
-        QueryOperations queryOperations = new QueryOperations(CEUtil.properties.getProperty(objectStore.get_SymbolicName())+"_TABLENAME");
+        QueryOperations queryOperations = new QueryOperations(CEUtil.properties.getProperty(objectStore.get_SymbolicName()+"_TABLENAME"));
         String query = "SELECT [Id], [Name], [DisplayName], [SymbolicName] FROM [ClassDefinition]";
         RepositoryRowSet rowSet = searchScope.fetchRows(getSearchSQL(query), null, null, new Boolean(true));
         Iterator<RepositoryRow> rowIterator = rowSet.iterator();
