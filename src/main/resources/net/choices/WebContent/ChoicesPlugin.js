@@ -29,7 +29,6 @@ require(["dojo/_base/declare",
                 }
             });
 
-
             var removeFeature = function(featureId) {
                 var featuresAvailable = ecm.model.desktop.features;
                 for (var j = 0; j < featuresAvailable.length; j++) {
@@ -40,6 +39,7 @@ require(["dojo/_base/declare",
                     }
                 }
             };
+
             var requestParams = {
                 userId: ecm.model.desktop.userId,
                 repositoryId: ecm.model.desktop.repositories[0].id

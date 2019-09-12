@@ -439,39 +439,43 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 actionName: "getProperties",
                 objectType: objectType
             };
-            this._callService(requestParams, lang.hitch(this, function(response) {
-                var self = this;
-                if (!this.propertySelect) {
-                    this.propertySelect = this.getFilteringList(response.data, "Property", "property", "margin-left:3%; width:50%");
-                    on(this.propertySelect, "change", lang.hitch(this, function(evt) {
-                        if (this.gridStore && evt !== this.propertySelectValue) {
-                            if (this._checkForInProgressEdits()) {
-                                this._showConfirmationDialog("Some changes have been made to current choices, Do you really want to change the Property?",
-                                    lang.hitch(this, function() {
-                                        this.propertySelectValue = evt;
-                                        this._resetGrid();
-                                    }),
-                                    lang.hitch(this, function() {
-                                        this.propertySelect.set("value", this.propertySelectValue)
-                                    }));
-                            } else {
-                                this.propertySelectValue = evt;
-                            }
+            if (!this.propertySelect) {
+                this.propertySelect = this.getFilteringList([], "Property", "property", "margin-left:3%; width:50%");
+                on(this.propertySelect, "change", lang.hitch(this, function(evt) {
+                    if (this.gridStore && evt !== this.propertySelectValue) {
+                        if (this._checkForInProgressEdits()) {
+                            this._showConfirmationDialog("Some changes have been made to current choices, Do you really want to change the Property?",
+                                lang.hitch(this, function() {
+                                    this.propertySelectValue = evt;
+                                    this._resetGrid();
+                                }),
+                                lang.hitch(this, function() {
+                                    this.propertySelect.set("value", this.propertySelectValue)
+                                }));
                         } else {
                             this.propertySelectValue = evt;
                         }
-                    }));
-                    this._addTD(this._createLabel("Property:").domNode, this.propertyTR, "margin-left:0%", "3%");
-                    this._addTD(this.propertySelect.domNode, this.propertyTR, "margin-left:0%", "3%");
-                    this._addTD(this.getDataButton.domNode, this.propertyTR, "margin-left:-3%", "3%");
-                } else {
-                    var store = new Memory({
-                        data: response.data
-                    });
-                    this.propertySelect.set("store", store);
-                }
+                    } else {
+                        this.propertySelectValue = evt;
+                    }
+                }));
+                this._addTD(this._createLabel("Property:").domNode, this.propertyTR, "margin-left:0%", "3%");
+                this._addTD(this.propertySelect.domNode, this.propertyTR, "margin-left:0%", "3%");
+                this._addTD(this.getDataButton.domNode, this.propertyTR, "margin-left:-3%", "3%");
 
-            }));
+            } else {
+                this._callService(requestParams, lang.hitch(this, function(response) {
+                    var self = this;
+                    if (this.propertySelect) {
+                        var store = new Memory({
+                            data: response.data
+                        });
+                        this.propertySelect.set("store", store);
+
+                    }
+
+                }));
+            }
             this.logExit("_getProperties");
         },
 
