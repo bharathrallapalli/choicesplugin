@@ -38,8 +38,7 @@ public class CEUtil {
 
         SearchScope searchScope = new SearchScope(objectStore);
         QueryOperations queryOperations = new QueryOperations(CEUtil.properties.getProperty(objectStore.get_SymbolicName())+"_TABLENAME");
-        String filter = CEUtil.properties.getProperty(objectStore.get_SymbolicName());
-        String query = "SELECT [Id], [Name], [DisplayName], [SymbolicName] FROM [ClassDefinition] WHERE [SymbolicName] like '"+filter+"_%'";
+        String query = "SELECT [Id], [Name], [DisplayName], [SymbolicName] FROM [ClassDefinition]";
         RepositoryRowSet rowSet = searchScope.fetchRows(getSearchSQL(query), null, null, new Boolean(true));
         Iterator<RepositoryRow> rowIterator = rowSet.iterator();
         Map<String, String> returnMap = new HashMap<String, String>();
