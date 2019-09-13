@@ -692,8 +692,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         _callService: function(requestParams, callbacks) {
             this.logEntry("_callService");
             requestParams.repositoryId = ecm.model.desktop.repositories[0].id;
-            Request.invokePluginService("ChoicesPlugin", "GetDataService", {
-                requestParams: requestParams,
+            Request.postPluginService("ChoicesPlugin", "GetDataService", "application/x-www-form-urlencoded", {
+                requestBody: dojo.objectToQuery(requestParams),
                 requestCompleteCallback: lang.hitch(this, function(response) {
                     if (callbacks)
                         callbacks(response);
