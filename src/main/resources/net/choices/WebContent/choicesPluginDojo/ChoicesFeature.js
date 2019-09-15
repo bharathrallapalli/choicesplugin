@@ -103,38 +103,42 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
                             return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
                         });
-                        var convertJSON = function(data) {
-                            var valArray = [];
-                            for (var i = 0; i < data.length; i++) {
-                                var obj = {
-                                    OBJECTTYPE: data[i].OBJECTTYPE[0],
-                                    PROPERTY: data[i].PROPERTY[0],
-                                    DISPNAME: data[i].DISPNAME[0],
-                                    VALUE: data[i].VALUE[0],
-                                    ISACTIVE: data[i].ISACTIVE[0],
-                                    DEPVALUE: data[i].DEPVALUE[0],
-                                    DEPON: data[i].DEPON[0]
-                                };
-                                valArray.push(obj);
+                        if (insertedRows.length > 0 || updatedRows.length > 0) {
+                            var convertJSON = function(data) {
+                                var valArray = [];
+                                for (var i = 0; i < data.length; i++) {
+                                    var obj = {
+                                        OBJECTTYPE: data[i].OBJECTTYPE[0],
+                                        PROPERTY: data[i].PROPERTY[0],
+                                        DISPNAME: data[i].DISPNAME[0],
+                                        VALUE: data[i].VALUE[0],
+                                        ISACTIVE: data[i].ISACTIVE[0],
+                                        DEPVALUE: data[i].DEPVALUE[0],
+                                        LISTDISPNAME: data[i].LISTDISPNAME[0],
+                                        DEPON: data[i].DEPON[0]
+                                    };
+                                    valArray.push(obj);
+                                }
+                                return valArray;
                             }
-                            return valArray;
+                            var requestParams = {
+                                actionName: "saveData",
+                                objectType: this.objectTypeSelectValue,
+                                property: this.propertySelectValue,
+                                insertedRows: JSON.stringify(convertJSON(insertedRows)),
+                                updatedRows: JSON.stringify(convertJSON(updatedRows))
+                            };
+                            this._callService(requestParams, lang.hitch(this, function(response) {
+                                if (response.status && response.status === "success") {
+                                    this._showMessageDialog("Save Data", "Data saved successfully");
+                                    this._resetGrid();
+                                } else {
+                                    this._showMessageDialog("Save Data", "Error saving data");
+                                }
+                            }));
+                        } else {
+                            this._showMessageDialog("Save Data", "Please add new entries or update existing entries before saving");
                         }
-                        var requestParams = {
-                            actionName: "saveData",
-                            objectType: this.objectTypeSelectValue,
-                            property: this.propertySelectValue,
-                            insertedRows: JSON.stringify(convertJSON(insertedRows)),
-                            updatedRows: JSON.stringify(convertJSON(updatedRows))
-                        };
-                        this._callService(requestParams, lang.hitch(this, function(response) {
-                            if (response.status && response.status === "success") {
-                                this._showMessageDialog("Save Data", "Data saved successfully");
-                                this._resetGrid();
-                            } else {
-                                this._showMessageDialog("Save Data", "Error saving data");
-                            }
-                        }));
-                        console.log(requestParams);
                     }
 
                 })
