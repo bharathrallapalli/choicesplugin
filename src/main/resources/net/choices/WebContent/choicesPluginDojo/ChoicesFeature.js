@@ -235,7 +235,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.screenWidth = window.screen.width - ((window.screen.width * 5) / 100);
             var topMargin = ((document.body.clientHeight * 5) / 100);
             var criteriaPaneHeight = (this.borderContainerHeight * 15) / 100;
-            var gridPaneHeight = (this.borderContainerHeight * 70) / 100;
+            var gridPaneHeight = (this.borderContainerHeight * 63) / 100;
             this.mainContentPane = new ContentPane({
                 region: "center",
                 splitter: false,
