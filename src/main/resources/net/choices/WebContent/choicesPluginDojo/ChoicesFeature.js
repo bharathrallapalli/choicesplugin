@@ -609,6 +609,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         onChange: function(value) {
                             var item = curObj.grid.getItem(rowId);
                             curObj.gridStore.setValue(item, cellId.field, value);
+                            curObj.gridStore.setValue(item, "LISTDISPNAME", value);
                         }
                     });
                     var superClassCloseDropDown = ecm.widget.FilteringSelect.prototype.closeDropDown;
