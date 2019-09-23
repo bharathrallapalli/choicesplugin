@@ -112,7 +112,7 @@ public class QueryOperations {
         List<String> values = new ArrayList<String>();
         String query = "SELECT DISTINCT(DEPON) FROM " + table_name + " where " +
                 "OBJECTTYPE='" + objectType + "' \n" +
-                "and PROPERTY='" + property + "'";
+                "and PROPERTY='" + property + "' and DEPON is not null and DEPON <> ''";
         try {
             System.out.println("Getting DEPON " + query);
             stmt = conn.createStatement();

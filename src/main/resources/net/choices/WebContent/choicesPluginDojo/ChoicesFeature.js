@@ -64,7 +64,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         this.grid.sort();
                         var item = this.gridStore._arrayOfAllItems[0];
                         this.gridStore.newItem({
-                            DEPON: item.DEPON,
+                            DEPON: "",
                             DEPVALUE: "",
                             DISPNAME: "",
                             ISACTIVE: false,
@@ -92,55 +92,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 onClick: lang.hitch(this, function() {
 
                     var inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                        return !item.VALUE[0] || !item.DISPNAME[0] || !item.DEPVALUE[0];
+                        return !item.VALUE[0] || !item.DISPNAME[0];
                     });
                     if (inProgressEdits.length > 0) {
                         this._showMessageDialog("Add Error", "Invalid Data! Please correct invalid records before saving");
                     } else {
-                        var insertedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                            return item.NEWINSERT && item.NEWINSERT[0] == true;
-                        });
-                        var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                            return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
-                        });
-                        if (insertedRows.length > 0 || updatedRows.length > 0) {
-                            var convertJSON = function(data) {
-                                var valArray = [];
-                                for (var i = 0; i < data.length; i++) {
-                                    var obj = {
-                                        OBJECTTYPE: data[i].OBJECTTYPE[0],
-                                        PROPERTY: data[i].PROPERTY[0],
-                                        DISPNAME: data[i].DISPNAME[0],
-                                        VALUE: data[i].VALUE[0],
-                                        ISACTIVE: data[i].ISACTIVE[0],
-                                        DEPVALUE: data[i].DEPVALUE[0],
-                                        LISTDISPNAME: data[i].LISTDISPNAME[0],
-                                        DEPON: data[i].DEPON[0]
-                                    };
-                                    valArray.push(obj);
-                                }
-                                return valArray;
-                            }
-                            var requestParams = {
-                                actionName: "saveData",
-                                objectType: this.objectTypeSelectValue,
-                                property: this.propertySelectValue,
-                                insertedRows: JSON.stringify(convertJSON(insertedRows)),
-                                updatedRows: JSON.stringify(convertJSON(updatedRows))
-                            };
-                            this._callService(requestParams, lang.hitch(this, function(response) {
-                                if (response.status && response.status === "success") {
-                                    this._showMessageDialog("Save Data", "Data saved successfully");
-                                    this._resetGrid();
-                                } else {
-                                    this._showMessageDialog("Save Data", "Error saving data");
-                                }
-                            }));
-                        } else {
-                            this._showMessageDialog("Save Data", "Please add new entries or update existing entries before saving");
-                        }
+                        this._saveData();
                     }
-
                 })
             });
             this._addTD(this.saveButton.domNode, this.actionButtonTR, "margin-left:1%", "0%");
@@ -160,6 +118,51 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 })
             });
             this._addTD(this.resetButton.domNode, this.actionButtonTR, "margin-left:1%", "0%");
+        },
+
+        _saveData: function() {
+            var insertedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                return item.NEWINSERT && item.NEWINSERT[0] == true;
+            });
+            var updatedRows = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                return item.NEWINSERT && item.NEWINSERT[0] == false && item.ISUPDATED && item.ISUPDATED[0] == true;
+            });
+            if (insertedRows.length > 0 || updatedRows.length > 0) {
+                var convertJSON = function(data) {
+                    var valArray = [];
+                    for (var i = 0; i < data.length; i++) {
+                        var obj = {
+                            OBJECTTYPE: data[i].OBJECTTYPE[0],
+                            PROPERTY: data[i].PROPERTY[0],
+                            DISPNAME: data[i].DISPNAME[0],
+                            VALUE: data[i].VALUE[0],
+                            ISACTIVE: data[i].ISACTIVE[0],
+                            DEPVALUE: data[i].DEPVALUE[0],
+                            LISTDISPNAME: data[i].LISTDISPNAME[0],
+                            DEPON: data[i].DEPON[0]
+                        };
+                        valArray.push(obj);
+                    }
+                    return valArray;
+                }
+                var requestParams = {
+                    actionName: "saveData",
+                    objectType: this.objectTypeSelectValue,
+                    property: this.propertySelectValue,
+                    insertedRows: JSON.stringify(convertJSON(insertedRows)),
+                    updatedRows: JSON.stringify(convertJSON(updatedRows))
+                };
+                this._callService(requestParams, lang.hitch(this, function(response) {
+                    if (response.status && response.status === "success") {
+                        this._showMessageDialog("Save Data", "Data saved successfully");
+                        this._resetGrid();
+                    } else {
+                        this._showMessageDialog("Save Data", "Error saving data");
+                    }
+                }));
+            } else {
+                this._showMessageDialog("Save Data", "Please add new entries or update existing entries before saving");
+            }
         },
 
         _createFilterTR: function() {
@@ -279,30 +282,40 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 spanLabel: true,
                 style: "margin-left:3%",
                 onClick: lang.hitch(this, function() {
-                    var requestParams = {
-                        actionName: "getChoices",
-                        objectType: this.objectTypeSelectValue,
-                        property: this.propertySelectValue
-                    };
-                    this._callService(requestParams, lang.hitch(this, function(response) {
-                        this._setGridStore(response.data);
-                        this._setDEPONStore(response.deponData);
-                        var setDepVal = true;
-                        if (response.depValData && response.depValData.length > 0) {
-                            setDepVal = false;
-                            this._setDepvaluStore(response.depValData);
-                        }
-                        this.gridStructure = this._getStructure(setDepVal);
-                        this.grid = this._createGrid();
-                        connect.connect(this.grid, "onRowClick", this, function(row) {
-                            row.target.focus();
+                    if (this.objectTypeSelectValue && this.propertySelectValue) {
+                        var requestParams = {
+                            actionName: "getChoices",
+                            objectType: this.objectTypeSelectValue,
+                            property: this.propertySelectValue
+                        };
+                        this._callService(requestParams, lang.hitch(this, function(response) {
+                            this._setGridStore(response.data);
+                            this._setDEPONStore(response.deponData);
+                            var setDepVal = true;
+                            if (response.depValData && response.depValData.length > 0) {
+                                setDepVal = false;
+                                this._setDepvaluStore(response.depValData);
+                            }
+                            this.gridStructure = this._getStructure(setDepVal);
+                            this.grid = this._createGrid();
+                            connect.connect(this.grid, "onRowClick", this, function(row) {
+                                row.target.focus();
 
-                        })
-                        this.resultsTitlePane.set("open", true);
-                        this.gridContentPane.set("content", this.grid);
-                        this.grid.startup();
-                        domStyle.set(this.actionButtonCP.domNode, "display", "");
-                    }));
+                            })
+                            this.resultsTitlePane.set("open", true);
+                            this.gridContentPane.set("content", this.grid);
+                            this.grid.startup();
+                            domStyle.set(this.actionButtonCP.domNode, "display", "");
+                        }));
+                    } else {
+                        if (!this.objectTypeSelectValue && !this.propertySelectValue) {
+                            this._showMessageDialog("Get Data", "Please select Document Class and Property");
+                        } else if (!this.objectTypeSelectValue) {
+                            this._showMessageDialog("Get Data", "Please select Document Class");
+                        } else if (!this.propertySelectValue) {
+                            this._showMessageDialog("Get Data", "Please select Property");
+                        }
+                    }
                 })
             });
             this.logExit("postCreate");
@@ -561,7 +574,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
 
             var selectDEPONFormatter = function(itemValue, rowId, cellId, cellField) {
                 var item = curObj.grid.getItem(rowId);
-                if (itemValue && !item.NEWINSERT[0]) {
+                if (!item.NEWINSERT[0]) {
                     return itemValue;
                 } else {
                     var editor = new FilteringSelect({
@@ -598,7 +611,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
 
             var selectDEPVALUEFormatter = function(itemValue, rowId, cellId, cellField) {
                 var item = curObj.grid.getItem(rowId);
-                if (itemValue && !item.NEWINSERT[0]) {
+                if (!item.NEWINSERT[0]) {
                     return itemValue;
                 } else {
                     var editor = new FilteringSelect({
