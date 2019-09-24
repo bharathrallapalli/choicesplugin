@@ -90,10 +90,17 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 spanLabel: true,
                 style: "margin-left:3%",
                 onClick: lang.hitch(this, function() {
-
-                    var inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                        return !item.VALUE[0] || !item.DISPNAME[0];
-                    });
+                    var inProgressEdits = null;
+                    if(this.deponData && this.deponData.items && this.deponData.items.length>0){
+                        inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                                            return !item.VALUE[0] || !item.DISPNAME[0] || !item.DEPON[0] || !item.DEPVALUE[0];
+                                        });
+                    }
+                    else{
+                        inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
+                                            return !item.VALUE[0] || !item.DISPNAME[0];
+                                        });
+                    }
                     if (inProgressEdits.length > 0) {
                         this._showMessageDialog("Add Error", "Invalid Data! Please correct invalid records before saving");
                     } else {
@@ -290,6 +297,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         };
                         this._callService(requestParams, lang.hitch(this, function(response) {
                             this._setGridStore(response.data);
+                            this.deponData = response.deponData;
                             this._setDEPONStore(response.deponData);
                             var setDepVal = true;
                             if (response.depValData && response.depValData.length > 0) {

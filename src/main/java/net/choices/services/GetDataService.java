@@ -42,9 +42,9 @@ public class GetDataService extends PluginService {
             String actionName = request.getParameter("actionName");
             String repositoryId = request.getParameter("repositoryId");
             ObjectStore objectStore = callbacks.getP8ObjectStore(repositoryId);
-            System.out.println("Repository ID "+repositoryId);
-            String table_name = CEUtil.properties.getProperty(objectStore.get_SymbolicName()+"_TABLENAME");
-            System.out.println("Table Name "+table_name);
+            System.out.println("Repository ID " + repositoryId);
+            String table_name = CEUtil.properties.getProperty(objectStore.get_SymbolicName() + "_TABLENAME");
+            System.out.println("Table Name " + table_name);
             QueryOperations queryOperations = new QueryOperations(table_name);
             JSONArray returnArray = new JSONArray();
             if ("getObjectTypes".equals(actionName)) {
@@ -129,33 +129,36 @@ public class GetDataService extends PluginService {
                     returnArray.add(jsonObject);
                 }
                 List<String> deponList = queryOperations.getDEPON(objectType, property);
-                List<String> depValList = null;
-                if (deponList.size() == 1) {
+                List<String> depValList = new ArrayList<String>();
+                if (deponList.size() >= 1) {
                     depValList = queryOperations.getDEPVALUES(objectType, property, deponList.get(0));
                 }
                 JSONArray depValArray = new JSONArray();
                 JSONArray deponArray = new JSONArray();
-                for (String value : deponList) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("name", value);
-                    jsonObject.put("id", value);
-                    deponArray.add(jsonObject);
+                if (deponList != null) {
+                    for (String value : deponList) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("name", value);
+                        jsonObject.put("id", value);
+                        deponArray.add(jsonObject);
+                    }
                 }
-                for (String value : depValList) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("name", value);
-                    jsonObject.put("id", value);
-                    depValArray.add(jsonObject);
+                if (depValList != null) {
+                    for (String value : depValList) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("name", value);
+                        jsonObject.put("id", value);
+                        depValArray.add(jsonObject);
+                    }
                 }
                 jsonResponse.put("deponData", deponArray);
                 jsonResponse.put("depValData", depValArray);
                 logger.logDebug(this, "execute", "Returned choices for objectType " + objectType + " and property " + property + " = " + returnArray.size());
-            }
-            else if("saveData".equals(actionName)){
+            } else if ("saveData".equals(actionName)) {
                 JSONArray insertedRows = JSONArray.parse(request.getParameter("insertedRows"));
                 JSONArray updatedRows = JSONArray.parse(request.getParameter("updatedRows"));
                 List<Choices> choiceArray = new ArrayList<Choices>();
-                for(int i=0; i<insertedRows.size(); i++){
+                for (int i = 0; i < insertedRows.size(); i++) {
                     JSONObject row = (JSONObject) insertedRows.get(i);
                     Choices choice = new Choices();
                     choice.setPROPERTY(row.get("PROPERTY").toString());
@@ -168,10 +171,10 @@ public class GetDataService extends PluginService {
                     choice.setISACTIVE(row.get("ISACTIVE").toString());
                     choiceArray.add(choice);
                 }
-                if(choiceArray.size()>0)
-                queryOperations.insertRecords(choiceArray);
+                if (choiceArray.size() > 0)
+                    queryOperations.insertRecords(choiceArray);
                 choiceArray = new ArrayList<Choices>();
-                for(int i=0; i<updatedRows.size(); i++){
+                for (int i = 0; i < updatedRows.size(); i++) {
                     JSONObject row = (JSONObject) updatedRows.get(i);
                     Choices choice = new Choices();
                     choice.setPROPERTY(row.get("PROPERTY").toString());
@@ -184,12 +187,12 @@ public class GetDataService extends PluginService {
                     choice.setISACTIVE(row.get("ISACTIVE").toString());
                     choiceArray.add(choice);
                 }
-                if(choiceArray.size()>0)
-                queryOperations.updateRecords(choiceArray);
+                if (choiceArray.size() > 0)
+                    queryOperations.updateRecords(choiceArray);
                 JSONObject jso = new JSONObject();
-                jso.put("data","Records Inserted");
+                jso.put("data", "Records Inserted");
                 returnArray.add(jso);
-                jsonResponse.put("status","success");
+                jsonResponse.put("status", "success");
             }
             jsonResponse.put("data", returnArray);
         } catch (Exception e) {
