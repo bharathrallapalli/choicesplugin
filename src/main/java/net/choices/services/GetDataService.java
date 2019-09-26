@@ -180,10 +180,7 @@ public class GetDataService extends PluginService {
                     choice.setPROPERTY(row.get("PROPERTY").toString());
                     choice.setOBJECTTYPE(row.get("OBJECTTYPE").toString());
                     choice.setDISPNAME(row.get("DISPNAME").toString());
-                    choice.setDEPON(row.get("DEPON").toString());
-                    choice.setDEPVALUE(row.get("DEPVALUE").toString());
                     choice.setVALUE(row.get("VALUE").toString());
-                    choice.setVALUE(row.get("LISTDISPNAME").toString());
                     choice.setISACTIVE(row.get("ISACTIVE").toString());
                     choiceArray.add(choice);
                 }
