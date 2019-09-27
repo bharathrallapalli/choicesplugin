@@ -63,11 +63,15 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         this.grid.setSortIndex(1, false);
                         this.grid.sort();
                         var item = this.gridStore._arrayOfAllItems[0];
+                        var depOn = "";
+                        if(this.deponData && this.deponData.items && this.deponData.items.length>0 && this.deponData.items[0].name){
+                          depOn = this.deponData.items[0].name;
+                        }
                         this.gridStore.newItem({
-                            DEPON: "",
+                            DEPON: depOn,
                             DEPVALUE: "",
                             DISPNAME: "",
-                            ISACTIVE: false,
+                            ISACTIVE: true,
                             ISUPDATED: true,
                             LANG: item.LANG,
                             LISTDISPNAME: item.LISTDISPNAME,
@@ -191,7 +195,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             var columnsToQuery = [];
             for (var i = 0; i < queryColumns.length; i++) {
                 var columnTo = {};
-                columnTo.id = queryColumns[i].name;
+                columnTo.id = queryColumns[i].field;
                 columnTo.name = queryColumns[i].name;
                 columnsToQuery.push(columnTo);
             }
@@ -217,7 +221,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 style: "margin-left:1%",
                 onClick: lang.hitch(this, function() {
                     console.log(this.filterTextBox.value);
-                    var prop = this.filterFieldSelect.displayedValue;
+                    var prop = this.filterFieldSelect.value;
                     var value = "*" + this.filterTextBox.value + "*";
                     var obj = {};
                     obj[prop] = value;
@@ -308,7 +312,6 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             this.grid = this._createGrid();
                             connect.connect(this.grid, "onRowClick", this, function(row) {
                                 row.target.focus();
-
                             })
                             this.resultsTitlePane.set("open", true);
                             this.gridContentPane.set("content", this.grid);
