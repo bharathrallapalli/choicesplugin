@@ -134,16 +134,16 @@ public class QueryOperations {
     public List<String> getDEPVALUES(String objectType, String property, String depon) throws Exception {
         Statement stmt = null;
         List<String> values = new ArrayList<String>();
-        String query = "SELECT DISTINCT(DEPVALUE) FROM " + table_name + " where " +
+        String query = "SELECT DISTINCT(VALUE) FROM " + table_name + " where " +
                 "OBJECTTYPE='" + objectType + "' \n" +
-                "and PROPERTY='" + property + "' and DEPON = '" + depon + "'";
+                "and PROPERTY= '" + depon + "'";
         try {
             System.out.println("Getting DEPAVLUE " + query);
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                String DEPVALUE = rs.getString("DEPVALUE");
-                values.add(DEPVALUE);
+                String VALUE = rs.getString("VALUE");
+                values.add(VALUE);
             }
         } catch (Exception e) {
             e.printStackTrace();

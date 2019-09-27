@@ -10,45 +10,45 @@ require(["dojo/_base/declare",
         console.log("Entered Choice Plugin " + new Date());
         connect.connect(Desktop, "onLogin", function() {
 
-            var superClasscreateLayoutAttributeMethod = ecm.model.configuration.LayoutModel.prototype.createLayoutAttribute;
-            lang.extend(LayoutModel, {
-                createLayoutAttribute: function(attributeDefinition) {
-                    if (attributeDefinition.choiceList && attributeDefinition.choiceList.choices && attributeDefinition.defaultValue) {
-                        var choices = attributeDefinition.choiceList.choices;
-                        var value = attributeDefinition.defaultValue;
-                        var foundChoice = array.filter(choices, function(item) {
-                            return item.value === value;
-                        });
-                        if (foundChoice.length < 1) {
-                            choices.push({
-                                value: value,
-                                name: value
-                            });
-                        }
-                    }
-                    return superClasscreateLayoutAttributeMethod.apply(this, [attributeDefinition]);
-                }
-            });
-
-            var superClassCreateEditorMethod = ecm.widget.SinglePropertyEditorFactory.prototype.createSinglePropertyEditor;
-            lang.extend(SinglePropertyEditorFactory, {
-                createSinglePropertyEditor: function(kwArgs, callback) {
-                    if (kwArgs.choiceList && kwArgs.choiceList.choices && kwArgs.values && kwArgs.values.length > 0 && kwArgs.cardinality === "SINGLE") {
-                        var value = kwArgs.values[0];
-                        var choices = kwArgs.choiceList.choices;
-                        var foundChoice = array.filter(choices, function(item) {
-                            return item.value === value;
-                        });
-                        if (foundChoice.length < 1) {
-                            choices.push({
-                                value: value,
-                                name: value
-                            });
-                        }
-                    }
-                    return superClassCreateEditorMethod.apply(this, [kwArgs, callback]);
-                }
-            });
+//            var superClasscreateLayoutAttributeMethod = ecm.model.configuration.LayoutModel.prototype.createLayoutAttribute;
+//            lang.extend(LayoutModel, {
+//                createLayoutAttribute: function(attributeDefinition) {
+//                    if (attributeDefinition.choiceList && attributeDefinition.choiceList.choices && attributeDefinition.defaultValue) {
+//                        var choices = attributeDefinition.choiceList.choices;
+//                        var value = attributeDefinition.defaultValue;
+//                        var foundChoice = array.filter(choices, function(item) {
+//                            return item.value === value;
+//                        });
+//                        if (foundChoice.length < 1) {
+//                            choices.push({
+//                                value: value,
+//                                name: value
+//                            });
+//                        }
+//                    }
+//                    return superClasscreateLayoutAttributeMethod.apply(this, [attributeDefinition]);
+//                }
+//            });
+//
+//            var superClassCreateEditorMethod = ecm.widget.SinglePropertyEditorFactory.prototype.createSinglePropertyEditor;
+//            lang.extend(SinglePropertyEditorFactory, {
+//                createSinglePropertyEditor: function(kwArgs, callback) {
+//                    if (kwArgs.choiceList && kwArgs.choiceList.choices && kwArgs.values && kwArgs.values.length > 0 && kwArgs.cardinality === "SINGLE") {
+//                        var value = kwArgs.values[0];
+//                        var choices = kwArgs.choiceList.choices;
+//                        var foundChoice = array.filter(choices, function(item) {
+//                            return item.value === value;
+//                        });
+//                        if (foundChoice.length < 1) {
+//                            choices.push({
+//                                value: value,
+//                                name: value
+//                            });
+//                        }
+//                    }
+//                    return superClassCreateEditorMethod.apply(this, [kwArgs, callback]);
+//                }
+//            });
 
             var removeFeature = function(featureId) {
                 var featuresAvailable = ecm.model.desktop.features;

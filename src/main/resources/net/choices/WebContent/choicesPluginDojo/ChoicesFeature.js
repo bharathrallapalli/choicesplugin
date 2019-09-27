@@ -678,23 +678,23 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     "field": "LANG",
                     "hidden": true
                 }, {
-                    "name": "DISPNAME",
+                    "name": "Display Name",
                     "field": "DISPNAME",
                     "formatter": textBoxFormatter
                 }, {
-                    "name": "VALUE",
+                    "name": "Value",
                     "field": "VALUE",
                     "formatter": textBoxFormatter
                 }, {
-                    "name": "DEPON",
+                    "name": "Dependant On",
                     "field": "DEPON",
                     "formatter": selectDEPONFormatter
                 }, {
-                    "name": "DEPVALUE",
+                    "name": "Display Value",
                     "field": "DEPVALUE",
                     "formatter": selectDEPVALUEFormatter
                 }, {
-                    "name": "ISACTIVE",
+                    "name": "Enable/Disable",
                     "field": "ISACTIVE",
                     "formatter": checkBoxFormatter
                 }, {

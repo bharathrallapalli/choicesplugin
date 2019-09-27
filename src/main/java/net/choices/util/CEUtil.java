@@ -99,8 +99,8 @@ public class CEUtil {
             System.out.println("Users :");
             while (userIterator.hasNext()){
                 User user = userIterator.next();
-                System.out.println(user.get_Name()+" "+ user.get_ShortName());
-                if(userId.equals(user.get_ShortName())){
+                System.out.println(user.get_Name()+" "+ user.get_ShortName() + " "+user.get_Email());
+                if(userId.equals(user.get_ShortName()) || userId.equals(user.get_Email())){
                     return true;
                 }
             }
