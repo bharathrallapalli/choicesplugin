@@ -509,12 +509,15 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             } else {
                 this._callService(requestParams, lang.hitch(this, function(response) {
                     var self = this;
-                    if (this.propertySelect) {
+                    if (this.propertySelect && response.data && response.data.le>0) {
                         var store = new Memory({
                             data: response.data
                         });
                         this.propertySelect.set("store", store);
 
+                    }
+                    else{
+                    this._showMessageDialog("Properties","Properties not found for the selected Document Class")
                     }
 
                 }));
