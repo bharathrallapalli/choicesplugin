@@ -6,13 +6,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
     "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
     "dojo/dom-style", "dojo/_base/array", "dojo/_base/connect",
     "ecm/widget/dialog/ConfirmationDialog", "dojo/_base/event",
-    "ecm/widget/dialog/MessageDialog", "dojo/aspect", "dijit/form/CheckBox",
+    "ecm/widget/dialog/MessageDialog", "dojo/aspect", "dijit/form/CheckBox","dojo/dom-class",
     "dojo/text!./templates/ChoicesFeature.html"
 ], function(declare,
     _LaunchBarPane, DataGrid, ItemFileWriteStore, TextBox, Request,
     lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
     on, TitlePane, domConstruct, domStyle, array, connect, ConfirmationDialog,
-    event, MessageDialog, aspect, CheckBox, template) {
+    event, MessageDialog, aspect, CheckBox, domClass, template) {
     /**
      * @name choicesPluginDojo.ChoicesFeature
      * @class
@@ -64,8 +64,8 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         this.grid.sort();
                         var item = this.gridStore._arrayOfAllItems[0];
                         var depOn = "";
-                        if(this.deponData && this.deponData.items && this.deponData.items.length>0 && this.deponData.items[0].name){
-                          depOn = this.deponData.items[0].name;
+                        if (this.deponData && this.deponData.items && this.deponData.items.length > 0 && this.deponData.items[0].name) {
+                            depOn = this.deponData.items[0].name;
                         }
                         this.gridStore.newItem({
                             DEPON: depOn,
@@ -95,15 +95,14 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 style: "margin-left:3%",
                 onClick: lang.hitch(this, function() {
                     var inProgressEdits = null;
-                    if(this.deponData && this.deponData.items && this.deponData.items.length>0){
+                    if (this.deponData && this.deponData.items && this.deponData.items.length > 0) {
                         inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                                            return !item.VALUE[0] || !item.DISPNAME[0] || !item.DEPON[0] || !item.DEPVALUE[0];
-                                        });
-                    }
-                    else{
+                            return !item.VALUE[0] || !item.DISPNAME[0] || !item.DEPON[0] || !item.DEPVALUE[0];
+                        });
+                    } else {
                         inProgressEdits = array.filter(this.gridStore._arrayOfAllItems, function(item) {
-                                            return !item.VALUE[0] || !item.DISPNAME[0];
-                                        });
+                            return !item.VALUE[0] || !item.DISPNAME[0];
+                        });
                     }
                     if (inProgressEdits.length > 0) {
                         this._showMessageDialog("Add Error", "Invalid Data! Please correct invalid records before saving");
@@ -300,23 +299,38 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                             property: this.propertySelectValue
                         };
                         this._callService(requestParams, lang.hitch(this, function(response) {
-                            this._setGridStore(response.data);
-                            this.deponData = response.deponData;
-                            this._setDEPONStore(response.deponData);
-                            var setDepVal = true;
-                            if (response.depValData && response.depValData.length > 0) {
-                                setDepVal = false;
-                                this._setDepvaluStore(response.depValData);
+                            if (response.data && response.data.length > 0) {
+                                if(this.actionTableContainer)
+                                domClass.remove(this.actionTableContainer,"dijitHidden");
+                                if(this.filterTableContainer)
+                                domClass.remove(this.filterTableContainer,"dijitHidden");
+                                this._setGridStore(response.data);
+                                this.deponData = response.deponData;
+                                this._setDEPONStore(response.deponData);
+                                var setDepVal = true;
+                                if (response.depValData && response.depValData.length > 0) {
+                                    setDepVal = false;
+                                    this._setDepvaluStore(response.depValData);
+                                }
+                                this.gridStructure = this._getStructure(setDepVal);
+                                this.grid = this._createGrid();
+                                connect.connect(this.grid, "onRowClick", this, function(row) {
+                                    row.target.focus();
+                                })
+                                this.resultsTitlePane.set("open", true);
+                                this.gridContentPane.set("content", this.grid);
+                                this.grid.startup();
+                                domStyle.set(this.actionButtonCP.domNode, "display", "");
                             }
-                            this.gridStructure = this._getStructure(setDepVal);
-                            this.grid = this._createGrid();
-                            connect.connect(this.grid, "onRowClick", this, function(row) {
-                                row.target.focus();
-                            })
-                            this.resultsTitlePane.set("open", true);
-                            this.gridContentPane.set("content", this.grid);
-                            this.grid.startup();
-                            domStyle.set(this.actionButtonCP.domNode, "display", "");
+                            else{
+                                    if(this.actionTableContainer)
+                                    domClass.add(this.actionTableContainer,"dijitHidden");
+                                    if(this.filterTableContainer)
+                                    domClass.add(this.filterTableContainer,"dijitHidden");
+                                    this._showMessageDialog("Get Data", "Choices not found for the selected Document Class and Property");
+                                    this._setGridStore(response.data);
+                                    this.grid = this._createGrid();
+                            }
                         }));
                     } else {
                         if (!this.objectTypeSelectValue && !this.propertySelectValue) {
@@ -363,6 +377,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 structure: this.gridStructure,
                 singleClickEdit: true,
                 rowSelector: "20px",
+                noDataMessage:"Choices not found for the selected Document Class and Property",
             }, document.createElement('div'));
             this._createFilterTR();
             return grid;
@@ -578,6 +593,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     onChange: function(value) {
                         var item = curObj.grid.getItem(rowId);
                         curObj.gridStore.setValue(item, cellId.field, value);
+                        curObj.gridStore.setValue(item, "VALUE", value);
                     }
                 });
                 return editor;
