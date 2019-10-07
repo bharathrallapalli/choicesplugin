@@ -6,7 +6,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
     "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
     "dojo/dom-style", "dojo/_base/array", "dojo/_base/connect",
     "ecm/widget/dialog/ConfirmationDialog", "dojo/_base/event",
-    "ecm/widget/dialog/MessageDialog", "dojo/aspect", "dijit/form/CheckBox","dojo/dom-class",
+    "ecm/widget/dialog/MessageDialog", "dojo/aspect", "dijit/form/CheckBox", "dojo/dom-class",
     "dojo/text!./templates/ChoicesFeature.html"
 ], function(declare,
     _LaunchBarPane, DataGrid, ItemFileWriteStore, TextBox, Request,
@@ -300,10 +300,10 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                         };
                         this._callService(requestParams, lang.hitch(this, function(response) {
                             if (response.data && response.data.length > 0) {
-                                if(this.actionTableContainer)
-                                domClass.remove(this.actionTableContainer,"dijitHidden");
-                                if(this.filterTableContainer)
-                                domClass.remove(this.filterTableContainer,"dijitHidden");
+                                if (this.actionTableContainer)
+                                    domClass.remove(this.actionTableContainer, "dijitHidden");
+                                if (this.filterTableContainer)
+                                    domClass.remove(this.filterTableContainer, "dijitHidden");
                                 this._setGridStore(response.data);
                                 this.deponData = response.deponData;
                                 this._setDEPONStore(response.deponData);
@@ -321,15 +321,14 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                 this.gridContentPane.set("content", this.grid);
                                 this.grid.startup();
                                 domStyle.set(this.actionButtonCP.domNode, "display", "");
-                            }
-                            else{
-                                    if(this.actionTableContainer)
-                                    domClass.add(this.actionTableContainer,"dijitHidden");
-                                    if(this.filterTableContainer)
-                                    domClass.add(this.filterTableContainer,"dijitHidden");
-                                    this._showMessageDialog("Get Data", "Choices not found for the selected Document Class and Property");
-                                    this._setGridStore(response.data);
-                                    this.grid = this._createGrid();
+                            } else {
+                                if (this.actionTableContainer)
+                                    domClass.add(this.actionTableContainer, "dijitHidden");
+                                if (this.filterTableContainer)
+                                    domClass.add(this.filterTableContainer, "dijitHidden");
+                                this._showMessageDialog("Get Data", "Choices not found for the selected Document Class and Property");
+                                this._setGridStore(response.data);
+                                this.grid = this._createGrid();
                             }
                         }));
                     } else {
@@ -377,7 +376,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 structure: this.gridStructure,
                 singleClickEdit: true,
                 rowSelector: "20px",
-                noDataMessage:"Choices not found for the selected Document Class and Property",
+                noDataMessage: "Choices not found for the selected Document Class and Property",
             }, document.createElement('div'));
             this._createFilterTR();
             return grid;
@@ -405,22 +404,16 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                     this.objectTypeSelectValue = evt;
                                     self.propertySelect.set("value", "");
                                     this.propertySelectValue = "";
-                                    var newStore = new dojo.data.ItemFileReadStore({
-                                        data: {
-                                            identifier: "",
-                                            items: []
-                                        }
-                                    });
-                                    this.grid.setStore(newStore);
-                                    this.gridStore = null;
+                                    this._clearGridAndHidePanes();
                                     self._getProperties(evt);
                                     domStyle.set(this.actionButtonCP.domNode, "display", "none");
                                 }),
                                 lang.hitch(this, function() {
-                                    this.objectTypeSelect.set("value", this.propertySelectValue)
+                                    this.objectTypeSelect.set("value", this.objectTypeSelectValue)
                                 }));
                         } else {
                             self.propertySelect.set("value", "");
+                            this._clearGridAndHidePanes();
                             self._getProperties(evt);
                             this.objectTypeSelectValue = evt;
                         }
@@ -436,7 +429,20 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             }));
             this.logExit("_getObjectTypes");
         },
-
+        _clearGridAndHidePanes: function() {
+            var newStore = new dojo.data.ItemFileReadStore({
+                data: {
+                    identifier: "",
+                    items: []
+                }
+            });
+            this.grid.setStore(newStore);
+            this.gridStore = null;
+            if (this.actionTableContainer)
+                domClass.add(this.actionTableContainer, "dijitHidden");
+            if (this.filterTableContainer)
+                domClass.add(this.filterTableContainer, "dijitHidden");
+        },
         _addTD: function(domNode, refNode, style, width) {
             this.logEntry("_addTD");
             var td = domConstruct.create("td", {
@@ -509,15 +515,24 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             } else {
                 this._callService(requestParams, lang.hitch(this, function(response) {
                     var self = this;
-                    if (this.propertySelect && response.data && response.data.length>0) {
+                    if (this.propertySelect && response.data && response.data.length > 0) {
                         var store = new Memory({
                             data: response.data
                         });
                         this.propertySelect.set("store", store);
 
-                    }
-                    else{
-                    this._showMessageDialog("Properties","Properties not found for the selected Document Class")
+                    } else {
+                        this._showMessageDialog("Properties", "Properties not found for the selected Document Class");
+                        if (this.grid) {
+                            var newStore = new dojo.data.ItemFileReadStore({
+                                data: {
+                                    identifier: "",
+                                    items: []
+                                }
+                            });
+                            this.grid.setStore(newStore);
+                            this.gridStore = null;
+                        }
                     }
 
                 }));
