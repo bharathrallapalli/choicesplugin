@@ -376,7 +376,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 structure: this.gridStructure,
                 singleClickEdit: true,
                 rowSelector: "20px",
-                noDataMessage: "Choices not found for the selected Document Class and Property",
+                noDataMessage: "No Data found",
             }, document.createElement('div'));
             this._createFilterTR();
             return grid;
@@ -437,9 +437,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 }
             });
             if(changeNoDataMessage && this.grid){
-                this.grid.noDataMessage="Please click on Get Choices button to loa  d choices";
+                this.grid.noDataMessage="Please click on Get Choices button to load choices";
             } else if(!changeNoDataMessage && this.grid){
-                this.grid.noDataMessage = "Choices not found for the selected Document Class and Property";
+                this.grid.noDataMessage = "No Data found";
             }
             this.grid.setStore(newStore);
             this.gridStore = null;
