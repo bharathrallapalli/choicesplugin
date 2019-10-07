@@ -248,7 +248,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             this.screenWidth = window.screen.width - ((window.screen.width * 5) / 100);
             var topMargin = ((document.body.clientHeight * 5) / 100);
             var criteriaPaneHeight = (this.borderContainerHeight * 15) / 100;
-            var gridPaneHeight = (this.borderContainerHeight * 63) / 100;
+            var gridPaneHeight = (this.borderContainerHeight * 60) / 100;
             this.mainContentPane = new ContentPane({
                 region: "center",
                 splitter: false,
@@ -404,7 +404,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                     this.objectTypeSelectValue = evt;
                                     self.propertySelect.set("value", "");
                                     this.propertySelectValue = "";
-                                    this._clearGridAndHidePanes();
+                                    this._clearGridAndHidePanes(true);
                                     self._getProperties(evt);
                                     domStyle.set(this.actionButtonCP.domNode, "display", "none");
                                 }),
@@ -413,7 +413,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                 }));
                         } else {
                             self.propertySelect.set("value", "");
-                            this._clearGridAndHidePanes();
+                            this._clearGridAndHidePanes(changeNoDataMessage);
                             self._getProperties(evt);
                             this.objectTypeSelectValue = evt;
                         }
@@ -429,13 +429,18 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
             }));
             this.logExit("_getObjectTypes");
         },
-        _clearGridAndHidePanes: function() {
+        _clearGridAndHidePanes: function(changeNoDataMessage) {
             var newStore = new dojo.data.ItemFileReadStore({
                 data: {
                     identifier: "",
                     items: []
                 }
             });
+            if(changeNoDataMessage && this.grid){
+                this.grid.noDataMessage="Please click on Get Choices button to loa  d choices";
+            } else if(!changeNoDataMessage && this.grid){
+                this.grid.noDataMessage = "Choices not found for the selected Document Class and Property";
+            }
             this.grid.setStore(newStore);
             this.gridStore = null;
             if (this.actionTableContainer)
@@ -503,6 +508,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                 }));
                         } else {
                             this.propertySelectValue = evt;
+                            this._clearGridAndHidePanes(true);
                         }
                     } else {
                         this.propertySelectValue = evt;
