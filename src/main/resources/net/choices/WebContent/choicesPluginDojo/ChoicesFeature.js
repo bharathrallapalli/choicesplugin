@@ -413,7 +413,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                                 }));
                         } else {
                             self.propertySelect.set("value", "");
-                            this._clearGridAndHidePanes(changeNoDataMessage);
+                            this._clearGridAndHidePanes(true);
                             self._getProperties(evt);
                             this.objectTypeSelectValue = evt;
                         }
@@ -436,9 +436,9 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     items: []
                 }
             });
-            if(changeNoDataMessage && this.grid){
-                this.grid.noDataMessage="Please click on Get Choices button to load choices";
-            } else if(!changeNoDataMessage && this.grid){
+            if (changeNoDataMessage && this.grid) {
+                this.grid.noDataMessage = "Please click on Get Choices button to load choices";
+            } else if (!changeNoDataMessage && this.grid) {
                 this.grid.noDataMessage = "No Data found";
             }
             this.grid.setStore(newStore);
@@ -530,14 +530,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     } else {
                         this._showMessageDialog("Properties", "Properties not found for the selected Document Class");
                         if (this.grid) {
-                            var newStore = new dojo.data.ItemFileReadStore({
-                                data: {
-                                    identifier: "",
-                                    items: []
-                                }
-                            });
-                            this.grid.setStore(newStore);
-                            this.gridStore = null;
+                            this._clearGridAndHidePanes(true);
+                            if (this.propertySelect) {
+                                var store = new Memory({
+                                    data: []
+                                });
+                                this.propertySelect.set("store", store);
+                            }
                         }
                     }
 
