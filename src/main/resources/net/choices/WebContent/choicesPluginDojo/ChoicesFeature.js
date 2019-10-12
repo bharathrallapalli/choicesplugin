@@ -224,6 +224,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     var value = "*" + this.filterTextBox.value + "*";
                     var obj = {};
                     obj[prop] = value;
+                    this.grid.queryOptions={ignoreCase: true};
                     this.grid.filter(obj);
                 })
             });
