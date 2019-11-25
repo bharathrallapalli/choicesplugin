@@ -1,6 +1,6 @@
 define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
-    "dojox/grid/DataGrid", "dojo/data/ItemFileWriteStore",
-    "dijit/form/TextBox", "ecm/model/Request", "dojo/_base/lang",
+    "dojox/grid/EnhancedGrid", "dojo/data/ItemFileWriteStore",
+    "ecm/widget/TextBox", "ecm/model/Request", "dojo/_base/lang",
     "dojox/layout/TableContainer", "ecm/widget/FilteringSelect",
     "dijit/form/Button", "dijit/layout/ContentPane", "dojo/store/Memory",
     "dojo/on", "ecm/widget/TitlePane", "dojo/dom-construct",
@@ -9,7 +9,7 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
     "ecm/widget/dialog/MessageDialog", "dojo/aspect", "dijit/form/CheckBox", "dojo/dom-class",
     "dojo/text!./templates/ChoicesFeature.html"
 ], function(declare,
-    _LaunchBarPane, DataGrid, ItemFileWriteStore, TextBox, Request,
+    _LaunchBarPane, EnhancedGrid, ItemFileWriteStore, TextBox, Request,
     lang, TableContainer, FilteringSelect, Button, ContentPane, Memory,
     on, TitlePane, domConstruct, domStyle, array, connect, ConfirmationDialog,
     event, MessageDialog, aspect, CheckBox, domClass, template) {
@@ -224,7 +224,6 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                     var value = "*" + this.filterTextBox.value + "*";
                     var obj = {};
                     obj[prop] = value;
-                    this.grid.queryOptions={ignoreCase: true};
                     this.grid.filter(obj);
                 })
             });
@@ -372,12 +371,20 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
         _createGrid: function() {
             this.logEntry("_createGrid");
             var self = this;
-            var grid = new DataGrid({
+            var grid = new EnhancedGrid({
                 store: this.gridStore,
                 structure: this.gridStructure,
                 singleClickEdit: true,
                 rowSelector: "20px",
                 noDataMessage: "No Data found",
+                canEdit: function(inCell, inRowIndex) {
+					var item = self.grid.getItem(inRowIndex);
+					var newInsert = item.NEWINSERT[0];
+                    if (newInsert && inCell.field && (inCell.field === "DISPNAME" || inCell.field==="VALUE")) {
+                        return true;
+                    }
+                    return false;
+                }
             }, document.createElement('div'));
             this._createFilterTR();
             return grid;
@@ -723,11 +730,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 }, {
                     "name": "Display Name",
                     "field": "DISPNAME",
-                    "formatter": textBoxFormatter
+                    "formatter": textBoxFormatter,
+                    "editable": true
                 }, {
                     "name": "Value",
                     "field": "VALUE",
-                    "formatter": textBoxFormatter
+                    "formatter": textBoxFormatter,
+                    "editable": true
                 }, {
                     "name": "Dependant On",
                     "field": "DEPON",
