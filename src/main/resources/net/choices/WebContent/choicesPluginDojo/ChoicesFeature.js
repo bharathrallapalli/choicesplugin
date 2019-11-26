@@ -377,6 +377,13 @@ define(["dojo/_base/declare", "ecm/widget/layout/_LaunchBarPane",
                 singleClickEdit: true,
                 rowSelector: "20px",
                 noDataMessage: "No Data found",
+                onApplyCellEdit: function(inValue, inRowIndex, inFieldIndex){
+                	var item = self.grid.getItem(inRowIndex);
+                	var newInsert = item.NEWINSERT[0];
+                    if (newInsert &&  inFieldIndex === "DISPNAME") {
+                        self.gridStore.setValue(item, "VALUE", inValue);
+                     }
+                },
                 canEdit: function(inCell, inRowIndex) {
 					var item = self.grid.getItem(inRowIndex);
 					var newInsert = item.NEWINSERT[0];
